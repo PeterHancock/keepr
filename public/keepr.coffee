@@ -2,10 +2,11 @@ class Keepr
   # @param {JSONDrop} jsonDrop database client
   constructor: (@jsonDrop, root) ->
     @$root = $ root
-    @$table = $ '#table'
+    @$keyList = $ '#key-list'
     @$rowTemplate = $('#row-template').text()
     @jsonDrop.load (db) => 
       @db = db ? @initiateDb()
+      @wire()
       @render()
       @$root.removeClass 'hidden'
 
@@ -13,9 +14,12 @@ class Keepr
     db = []
     @jsonDrop.save db, () =>
     db
- 
+
+  wire: () ->
+    $('#new-key-form').submit (event) => @onNewKey event
+
   render: () ->
-    @$table.empty()
+    @$keyList.empty()
     @renderRow(row) for row in @db
 
   renderRow: (row) ->
@@ -25,8 +29,30 @@ class Keepr
     $('.url', $row).attr('target', '_new')    
     $('.username', $row).text row.username
     $('.password-key', $row).text row.passwordKey
-    @$table.append $row
+    $('.key-remove-button', $row).click (event) => @onRemoveRow event, row
+    @$keyList.append $row
 
+  onRemoveRow: (event, row) ->
+    i = index for r, index in @db when r.url == row.url
+    @db.splice i,1
+    @jsonDrop.save @db, () =>
+      @render()
+
+  onNewKey: (event) ->
+    event.preventDefault()
+    username = $('#new-username').val()
+    key = $('#new-password-key').val()
+    url = $('#new-url').val()
+    # TODO check url does not exist and validate
+    $('#new-key-button').attr 'disabled', 'disabled'
+    row = {url: url, username: username, passwordKey: key}
+    @db.push row
+    @jsonDrop.save @db, () =>
+      $('#new-key-button').removeAttr 'disabled'
+      @render() 
+ 
+
+ 
 # Utility
 urlParam = (name) ->
     results = new RegExp("[\\?&]#{name}").exec(window.location.href)

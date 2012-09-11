@@ -28,16 +28,32 @@
           <a href="https://www.dropbox.com/developers">dropbox</a>
         </small>
       </h1>
-      <table id="table">
-      </table>
+      <ol id="key-list" class="key-list">
+      </ol>
+      <form action="" method="GET" id="new-key-form">
+        <input type="text" id="new-url" class="url"
+          required="required" placeholder="e.g., https://www.dropbox.com" />
+        <input type="text" id="new-username" class="username"
+          required="required" placeholder="username e.g., someone@gmail.com" />
+        <input type="text" id="new-password-key" class="password-key"
+          required="required" placeholder="password key" />
+        <button type="submit" id="new-key-button">
+          <img src="images/add.png" alt="" /> Add
+        </button>
+      </form>
     </article>
 
     <script type="text/html" id="row-template">
-      <tr>
-        <td><a class="url" href="#"  /></td>
-        <td><span class="username" /></td>
-        <td><span class="password-key" /></td>
-      </tr>
+      <li class="key">
+        <span><a class="url" href="#"  /></span>
+        <span><span class="username" /></span>
+        <span><span class="password-key" /></span>
+        <span class="key-actions">
+          <button type="button" class="key-remove-button">
+            <img src="images/remove.png" alt="" /> Delete
+          </button>
+        </span>
+      </li>
     </script>
   </body>
 </html>
