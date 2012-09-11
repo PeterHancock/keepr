@@ -4,6 +4,7 @@ class Keepr
     @$root = $ root
     @$keyList = $ '#key-list'
     @$rowTemplate = $('#row-template').text()
+    @$dialogTemplate = $('#dialog-template').text()
     @jsonDrop.load (db) => 
       @db = db ? @initiateDb()
       @wire()
@@ -29,8 +30,17 @@ class Keepr
     $('.url', $row).attr('target', '_new')    
     $('.username', $row).text row.username
     $('.password-key', $row).text row.passwordKey
+    $('.password-button', $row).click (event) => @onDisplayPassword event, row
     $('.key-remove-button', $row).click (event) => @onRemoveRow event, row
     @$keyList.append $row
+
+  onDisplayPassword: (event, row) ->
+    $dialog = @$dialogTemplate
+    dialog = $ '#generate'
+    dialog.empty()
+    dialog.dialog()
+      .append($dialog)
+      .click (event) => dialog.dialog 'close'
 
   onRemoveRow: (event, row) ->
     i = index for r, index in @db when r.url == row.url

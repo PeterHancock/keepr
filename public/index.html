@@ -5,9 +5,11 @@
     <title>keepr - A Dropbox password manager</title>
     <link rel="icon" type="image/png" href="images/icon16.png" />
     <link rel="stylesheet/less" type="text/css" href="./keepr.less" />
+    <link rel="stylesheet" type="text/css" href="css/jquery-ui-1.8.23.custom.css" />
     <script type="text/javascript" src="lib/coffee-script.js"></script>
     <script type="text/javascript" src="lib/dropbox.js"></script>
     <script type="text/javascript" src="lib/jquery.js"></script>
+    <script type="text/javascript" src="lib/jquery-ui-1.8.23.custom.min.js"></script>
     <script type="text/javascript" src="lib/less.js"></script>
     <script type="text/javascript" src="lib/jsondrop.js"></script>
     <script type="text/coffeescript" src="./keepr.coffee"></script>
@@ -42,18 +44,29 @@
         </button>
       </form>
     </article>
-
+    <div id="generate"></div>
     <script type="text/html" id="row-template">
       <li class="key">
-        <span><a class="url" href="#"  /></span>
+        <div><a class="url" href="#"  /></div>
         <span><span class="username" /></span>
         <span><span class="password-key" /></span>
         <span class="key-actions">
+          <button type="button" class="password-button">
+            Generate 
+          </button>
           <button type="button" class="key-remove-button">
             <img src="images/remove.png" alt="" /> Delete
           </button>
         </span>
       </li>
+    </script>
+    <script type="text/html" id="dialog-template">
+      <div class="dialog">
+      <form action="" method="GET" id="generate-form">
+        <input type="text" id="private-key" class="private-key"
+          required="required" placeholder="******" />
+      </form>
+      </div>
     </script>
   </body>
 </html>
