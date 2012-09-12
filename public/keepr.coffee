@@ -7,7 +7,7 @@ class Keepr
     @$dialogTemplate = $('#dialog-template').text()
     @jsonDrop.load (db) => 
       @db = db ? @initiateDb()
-      @passwordGenerator = Function("key1,key2", @db.passwordGenerator)
+      @passwordGenerator = Function("passwordKey, privateKey, sha1, sha1base64, urlEncode", @db.passwordGenerator)
       @passwords = @db.passwords
       @wire()
       @render()
@@ -37,15 +37,14 @@ class Keepr
     @$keyList.append $row
 
   onDisplayPassword: (event, row) ->
-    $dialog = @$dialogTemplate
-    dialog = $ '#generate'
-    dialog.empty()
-    dialog.dialog()
-      .append($dialog)
+    $dialog = $ '#generate-dialog'
+    $dialog.empty()
+    $dialog.dialog()
+        .append($ @$dialogTemplate)
     $('#generate-form').submit (event) =>
       event.preventDefault()
       @onGeneratePassword row
-      dialog.dialog 'close'
+      $dialog.dialog 'close'
 
   onRemoveRow: (event, row) ->
     i = index for r, index in @passwords when r.url == row.url
@@ -68,7 +67,18 @@ class Keepr
  
   onGeneratePassword: (row) ->
     privateKey = $('#private-key').val()
-    console.log @passwordGenerator(row.passwordKey, privateKey)
+    privateKeyRepeat = $('#private-key-repeat').val()
+    return console.log 'passwords do not match' if privateKey != privateKeyRepeat
+    console.log @generatePassword(row.passwordKey, privateKey)[0..8] + '***...'
+
+  generatePassword: (passwordKey, privateKey) ->
+    sha1 = (str) ->
+      CryptoJS.SHA1(str).toString()
+    sha1base64 = (str) ->
+      CryptoJS.SHA1(str).toString(CryptoJS.enc.Base64)
+    urlEncode = (str) ->
+      str.replace('+', '-').replace('/', '_')
+    @passwordGenerator(passwordKey, privateKey, sha1, sha1base64,      urlEncode)
 
 # Utility
 urlParam = (name) ->

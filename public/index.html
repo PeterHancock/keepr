@@ -12,6 +12,9 @@
     <script type="text/javascript" src="lib/jquery-ui-1.8.23.custom.min.js"></script>
     <script type="text/javascript" src="lib/less.js"></script>
     <script type="text/javascript" src="lib/jsondrop.js"></script>
+    <script type="text/javascript" src="lib/crypto/core-min.js"></script>
+    <script type="text/javascript" src="lib/crypto/enc-base64-min.js"></script>
+    <script type="text/javascript" src="lib/crypto/sha1-min.js"></script>
     <script type="text/coffeescript" src="./keepr.coffee"></script>
   </head>
   <body>
@@ -44,7 +47,7 @@
         </button>
       </form>
     </article>
-    <div id="generate"></div>
+    <div id="generate-dialog" title="Generate Password"></div>
     <script type="text/html" id="row-template">
       <li class="key">
         <div><a class="url" href="#"  /></div>
@@ -61,15 +64,15 @@
       </li>
     </script>
     <script type="text/html" id="dialog-template">
-      <div class="dialog">
       <form action="" method="GET" id="generate-form">
-        <input type="text" id="private-key" class="private-key"
-          required="required" placeholder="******" />
+        <input type="password" id="private-key" class="private-key"
+          required="required" />
+        <input type="password" id="private-key-repeat" class="private-key"
+          required="required" />
         <button type="submit" id="new-key-button">
           Show
         </button>
       </form>
-      </div>
     </script>
   </body>
 </html>
