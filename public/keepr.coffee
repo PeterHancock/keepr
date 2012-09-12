@@ -7,12 +7,14 @@ class Keepr
     @$dialogTemplate = $('#dialog-template').text()
     @jsonDrop.load (db) => 
       @db = db ? @initiateDb()
+      @passwordGenerator = Function("key1,key2", @db.passwordGenerator)
+      @passwords = @db.passwords
       @wire()
       @render()
       @$root.removeClass 'hidden'
 
   initiateDb: () ->
-    db = []
+    db = {paswordGenerator: "alert('No password generator is set!'); null;", passwords: []}
     @jsonDrop.save db, () =>
     db
 
@@ -21,7 +23,7 @@ class Keepr
 
   render: () ->
     @$keyList.empty()
-    @renderRow(row) for row in @db
+    @renderRow(row) for row in @passwords
 
   renderRow: (row) ->
     $row = $ @$rowTemplate
@@ -40,11 +42,14 @@ class Keepr
     dialog.empty()
     dialog.dialog()
       .append($dialog)
-      .click (event) => dialog.dialog 'close'
+    $('#generate-form').submit (event) =>
+      event.preventDefault()
+      @onGeneratePassword row
+      dialog.dialog 'close'
 
   onRemoveRow: (event, row) ->
-    i = index for r, index in @db when r.url == row.url
-    @db.splice i,1
+    i = index for r, index in @passwords when r.url == row.url
+    @passwords.splice i,1
     @jsonDrop.save @db, () =>
       @render()
 
@@ -56,13 +61,15 @@ class Keepr
     # TODO check url does not exist and validate
     $('#new-key-button').attr 'disabled', 'disabled'
     row = {url: url, username: username, passwordKey: key}
-    @db.push row
+    @passwords.push row
     @jsonDrop.save @db, () =>
       $('#new-key-button').removeAttr 'disabled'
       @render() 
  
+  onGeneratePassword: (row) ->
+    privateKey = $('#private-key').val()
+    console.log @passwordGenerator(row.passwordKey, privateKey)
 
- 
 # Utility
 urlParam = (name) ->
     results = new RegExp("[\\?&]#{name}").exec(window.location.href)
