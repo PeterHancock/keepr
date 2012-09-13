@@ -92,9 +92,9 @@ else
     (args...) -> return
 
 $ ->
+  # The Dropbox App key
   key = 'r2mjxyg3kgewwfd'
+  # The Dropbox App secret
   secret = 'txagd2sle3n1s3y'
-  jsonDrop = new JsonDrop(
-  # TODO these codes are for the jsondrop client app
-    key: key, secret: secret)
+  jsonDrop = new JsonDrop(key: key, secret: secret)
   new Keepr jsonDrop, '#app-ui'
