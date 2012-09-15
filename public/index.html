@@ -32,43 +32,43 @@
           <a href="https://www.dropbox.com/developers">dropbox</a>
         </small>
       </h1>
-      <ol id="key-list" class="key-list">
+      <ol id="account-list" class="account-list">
       </ol>
-      <form action="" method="GET" id="new-key-form">
+      <form action="" method="GET" id="new-account-form">
         <input type="text" id="new-url" class="url"
           required="required" placeholder="e.g., https://www.dropbox.com" />
         <input type="text" id="new-username" class="username"
           required="required" placeholder="username e.g., someone@gmail.com" />
         <input type="text" id="new-password-key" class="password-key"
           required="required" placeholder="password key" />
-        <button type="submit" id="new-key-button">
+        <button type="submit" id="new-account-button">
           <img src="images/add.png" alt="" /> Add
         </button>
       </form>
     </article>
-    <div id="generate-dialog" title="Generate Password"></div>
-    <script type="text/html" id="row-template">
-      <li class="key">
+    <div id="generate-password" title="Generate Password"></div>
+    <script type="text/html" id="account-template">
+      <li class="account">
         <div><a class="url" href="#"  /></div>
         <span><span class="username" /></span>
         <span><span class="password-key" /></span>
-        <span class="key-actions">
+        <span class="account-actions">
           <button type="button" class="password-button">
-            Generate 
+            Generate password
           </button>
-          <button type="button" class="key-remove-button">
+          <button type="button" class="account-remove-button">
             <img src="images/remove.png" alt="" /> Delete
           </button>
         </span>
       </li>
     </script>
-    <script type="text/html" id="dialog-template">
-      <form action="" method="GET" id="generate-form">
+    <script type="text/html" id="generate-password-template">
+      <form action="" method="GET" id="generate-password-form">
         <input type="password" id="private-key" class="private-key"
           required="required" />
         <input type="password" id="private-key-repeat" class="private-key"
           required="required" />
-        <button type="submit" id="new-key-button">
+        <button type="submit" id="show-password-button">
           Show
         </button>
       </form>

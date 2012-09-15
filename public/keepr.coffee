@@ -2,9 +2,9 @@ class Keepr
   # @param {JSONDrop} jsonDrop database client
   constructor: (@jsonDrop, root) ->
     @$root = $ root
-    @$keyList = $ '#key-list'
-    @$rowTemplate = $('#row-template').text()
-    @$dialogTemplate = $('#dialog-template').text()
+    @$accountList = $ '#account-list'
+    @$accountTemplate = $('#account-template').text()
+    @$generatePasswordTemplate = $('#generate-password-template').text()
     @jsonDrop.load (db) => 
       @db = db ? @initiateDb()
       @passwordGenerator = Function("passwordKey, privateKey, sha1, sha1base64, urlEncode", @db.passwordGenerator)
@@ -19,57 +19,57 @@ class Keepr
     db
 
   wire: () ->
-    $('#new-key-form').submit (event) => @onNewKey event
+    $('#new-account-form').submit (event) => @onNewAccount event
 
   render: () ->
-    @$keyList.empty()
-    @renderRow(row) for row in @passwords
+    @$accountList.empty()
+    @renderAccount(account) for account in @passwords
 
-  renderRow: (row) ->
-    $row = $ @$rowTemplate
-    $('.url', $row).text row.url    
-    $('.url', $row).attr('href', row.url)    
-    $('.url', $row).attr('target', '_new')    
-    $('.username', $row).text row.username
-    $('.password-key', $row).text row.passwordKey
-    $('.password-button', $row).click (event) => @onDisplayPassword event, row
-    $('.key-remove-button', $row).click (event) => @onRemoveRow event, row
-    @$keyList.append $row
+  renderAccount: (account) ->
+    $account = $ @$accountTemplate
+    $('.url', $account).text account.url
+    $('.url', $account).attr('href', account.url)
+    $('.url', $account).attr('target', '_new')
+    $('.username', $account).text account.username
+    $('.password-key', $account).text account.passwordAccount
+    $('.password-button', $account).click (event) => @onGeneratePassword event, account
+    $('.account-remove-button', $account).click (event) => @onRemoveAccount event, account
+    @$accountList.append $account
 
-  onDisplayPassword: (event, row) ->
-    $dialog = $ '#generate-dialog'
-    $dialog.empty()
-    $dialog.dialog()
-        .append($ @$dialogTemplate)
-    $('#generate-form').submit (event) =>
-      event.preventDefault()
-      @onGeneratePassword row
-      $dialog.dialog 'close'
-
-  onRemoveRow: (event, row) ->
-    i = index for r, index in @passwords when r.url == row.url
+  onRemoveAccount: (event, account) ->
+    i = index for r, index in @passwords when r.url == account.url
     @passwords.splice i,1
     @jsonDrop.save @db, () =>
       @render()
 
-  onNewKey: (event) ->
+  onNewAccount: (event) ->
     event.preventDefault()
+    url = $('#new-url').val()
     username = $('#new-username').val()
     key = $('#new-password-key').val()
-    url = $('#new-url').val()
     # TODO check url does not exist and validate
     $('#new-key-button').attr 'disabled', 'disabled'
-    row = {url: url, username: username, passwordKey: key}
-    @passwords.push row
+    account = {url: url, username: username, passwordKey: key}
+    @passwords.push account
     @jsonDrop.save @db, () =>
       $('#new-key-button').removeAttr 'disabled'
       @render() 
  
-  onGeneratePassword: (row) ->
+  onGeneratePassword: (event, account) ->
+    $dialog = $ '#generate-password'
+    $dialog.empty()
+    $dialog.dialog()
+        .append($ @$generatePasswordTemplate)
+    $('#generate-password-form').submit (event) =>
+      event.preventDefault()
+      @showPassword account
+      $dialog.dialog 'close'
+
+  showPassword: (account) ->
     privateKey = $('#private-key').val()
     privateKeyRepeat = $('#private-key-repeat').val()
     return console.log 'passwords do not match' if privateKey != privateKeyRepeat
-    console.log @generatePassword(row.passwordKey, privateKey)[0..8] + '***...'
+    alert @generatePassword(account.passwordKey, privateKey)[0..8] + '***...'
 
   generatePassword: (passwordKey, privateKey) ->
     sha1 = (str) ->
