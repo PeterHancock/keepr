@@ -37,8 +37,8 @@ class Keepr
     @$accountList.append $account
 
   onRemoveAccount: (event, account) ->
-    i = index for r, index in @accounts when r.url == account.url
-    @accounts.splice i,1
+    @accounts = _.reject @accounts, (a) -> a.url == account.url
+    @db.accounts = @accounts
     @jsonDrop.save @db, () =>
       @render()
 
