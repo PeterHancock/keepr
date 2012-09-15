@@ -8,13 +8,13 @@ class Keepr
     @jsonDrop.load (db) => 
       @db = db ? @initiateDb()
       @passwordGenerator = Function("passwordKey, privateKey, sha1, sha1base64, urlEncode", @db.passwordGenerator)
-      @passwords = @db.passwords
+      @accounts = @db.accounts
       @wire()
       @render()
       @$root.removeClass 'hidden'
 
   initiateDb: () ->
-    db = {paswordGenerator: "alert('No password generator is set!'); null;", passwords: []}
+    db = {paswordGenerator: "alert('No password generator is set!'); null;", accounts: []}
     @jsonDrop.save db, () =>
     db
 
@@ -23,7 +23,7 @@ class Keepr
 
   render: () ->
     @$accountList.empty()
-    @renderAccount(account) for account in @passwords
+    @renderAccount(account) for account in @accounts
 
   renderAccount: (account) ->
     $account = $ @$accountTemplate
@@ -37,8 +37,8 @@ class Keepr
     @$accountList.append $account
 
   onRemoveAccount: (event, account) ->
-    i = index for r, index in @passwords when r.url == account.url
-    @passwords.splice i,1
+    i = index for r, index in @accounts when r.url == account.url
+    @accounts.splice i,1
     @jsonDrop.save @db, () =>
       @render()
 
@@ -49,8 +49,8 @@ class Keepr
     key = $('#new-password-key').val()
     # TODO check url does not exist and validate
     $('#new-key-button').attr 'disabled', 'disabled'
-    account = {url: url, username: username, passwordKey: key}
-    @passwords.push account
+    account = new Account(url: url, username: username, passwordKey: key)
+    @accounts.push account
     @jsonDrop.save @db, () =>
       $('#new-key-button').removeAttr 'disabled'
       @render() 
@@ -78,7 +78,11 @@ class Keepr
       CryptoJS.SHA1(str).toString(CryptoJS.enc.Base64)
     urlEncode = (str) ->
       str.replace('+', '-').replace('/', '_')
-    @passwordGenerator(passwordKey, privateKey, sha1, sha1base64,      urlEncode)
+    @passwordGenerator(passwordKey, privateKey, sha1, sha1base64, urlEncode)
+
+
+class Account
+    constructor: ({@url, @username, @passwordKey}) ->
 
 # Utility
 urlParam = (name) ->
