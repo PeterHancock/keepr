@@ -21,7 +21,7 @@ class Keepr
     db
 
   wire: ->
-    $('#new-account-form').submit (event) => @onNewAccount event
+    $('#new-account-form').submit (event) => @onCreateAccount event
 
   render: ->
     @$accountList.empty()
@@ -53,7 +53,7 @@ class Keepr
       $dialog.dialog 'close'
       log 'Cancelled the deletion of account'
 
-  onNewAccount: (event) ->
+  onCreateAccount: (event) ->
     event.preventDefault()
     url = $('#new-url').val()
     username = $('#new-username').val()
@@ -64,8 +64,9 @@ class Keepr
     @accounts.push account
     @jsonDrop.save @db, () =>
       $('#new-key-button').removeAttr 'disabled'
-      @render() 
- 
+      @render()
+    $('#new-account-form input').each -> $(this).val('')
+
   onGeneratePassword: (event, account) ->
     $dialog = $ '#generate-password'
     $dialog.empty()
