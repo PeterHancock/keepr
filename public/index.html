@@ -3,8 +3,9 @@
   <head>
     <title>keepr - A Dropbox password manager</title>
     <link rel="icon" type="image/png" href="images/icon16.png" />
-    <link rel="stylesheet/less" type="text/css" href="./keepr.less" />
+    <!--link rel="stylesheet/less" type="text/css" href="./keepr.less" /-->
     <link rel="stylesheet" type="text/css" href="css/jquery-ui-1.8.23.custom.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
     <script type="text/javascript" src="lib/coffee-script.js"></script>
     <script type="text/javascript" src="lib/dropbox.js"></script>
     <script type="text/javascript" src="lib/jquery.js"></script>
@@ -15,24 +16,50 @@
     <script type="text/javascript" src="lib/crypto/enc-base64-min.js"></script>
     <script type="text/javascript" src="lib/crypto/sha1-min.js"></script>
     <script type="text/javascript" src="lib/underscore-min.js"></script>
+    <script type="text/javascript" src="lib/bootstrap.min.js"></script>
     <script type="text/coffeescript" src="./keepr.coffee"></script>
+    <style type="text/css">
+      body {
+        padding-top: 60px;
+        padding-bottom: 40px;
+      }
+    </style>
 </head>
   <body>
-    <aside id="error-notice" class="hidden">
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="#">Keepr</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+              <li class="active"><a href="#">Setting</a></li>
+              <li><a href="#about">About</a></li>
+              <li><a href="#contact">Contact</a></li>
+            </ul>
+            <span class="pull-right">powered by <a href="https://www.dropbox.com/developers">dropbox</a></span>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+
+    <!--aside id="error-notice" class="hidden">
       <form action="#" method="GET">
         Something went wrong :(
         <button type="submit" id="error-refresh-button">
           <img src="images/not_done.png" alt="" /> reload the app
         </button>
       </form>
-    </aside>
-    <article id="app-ui" class="hidden">
-      <h1>
-        Keepr
-        <small>powered by
-          <a href="https://www.dropbox.com/developers">dropbox</a>
-        </small>
-      </h1>
+    </aside-->
+    <div id="app-ui" class="container hidden">
+      <div class="hero-unit">
+        <h1>Keepr</h1>
+        <p>Quickly generate passwords for your online accounts from your private Dropbox data.  Keepr allows you to configure the password generator.</p>
+      </div>
       <ol id="account-list" class="account-list">
       </ol>
       <form action="" method="GET" id="new-account-form">
@@ -42,11 +69,11 @@
           required="required" placeholder="username e.g., someone@gmail.com" />
         <input type="text" id="new-password-key" class="password-key"
           required="required" placeholder="password key" />
-        <button type="submit" id="new-account-button">
+        <button type="submit" id="new-account-button" class="btn btn-primary">
           <img src="images/add.png" alt="" /> Add
         </button>
       </form>
-    </article>
+    </div>
     <div id="generate-password" title="Generate Password"></div>
     <div id="show-password" title="Generated Password"></div>
     <div id="delete-account" title="Delete Account"></div>
@@ -56,11 +83,11 @@
         <span><span class="username" /></span>
         <span><span class="password-key" /></span>
         <span class="account-actions">
-          <button type="button" class="password-button">
+          <button type="button" class="btn btn-primary password-button">
             Generate password
           </button>
-          <button type="button" class="account-delete-button">
-            <img src="images/remove.png" alt="" /> Delete
+          <button type="button" class="btn btn-danger account-delete-button">
+            <img src="images/remove.png" alt="" />
           </button>
         </span>
       </li>
@@ -81,7 +108,7 @@
     <script type="text/html" id="show-password-template">
       <form action="" method="GET" id="show-password-form">
         Copy selection:
-        <input type="text" class="show-password" />
+        <input type="text" class="input-mini show-password" />
       </form>
     </script>
     <script type="text/html" id="delete-account-template">
