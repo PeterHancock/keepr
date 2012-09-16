@@ -20,10 +20,10 @@ class Keepr
     jsonDrop.save db, () =>
     db
 
-  wire: () ->
+  wire: ->
     $('#new-account-form').submit (event) => @onNewAccount event
 
-  render: () ->
+  render: ->
     @$accountList.empty()
     @renderAccount(account) for account in _.sortBy @accounts, (account) -> account.url
 
@@ -73,14 +73,24 @@ class Keepr
         .append($ @$generatePasswordTemplate)
     $('#generate-password-form').submit (event) =>
       event.preventDefault()
-      @showPassword account
+      privateKey = $('#private-key').val()
+      privateKeyRepeat = $('#private-key-repeat').val()
       $dialog.dialog 'close'
+      $dialog.empty()
+      return alert 'passwords do not match' if privateKey != privateKeyRepeat
+      @showPassword account, privateKey
 
-  showPassword: (account) ->
-    privateKey = $('#private-key').val()
-    privateKeyRepeat = $('#private-key-repeat').val()
-    return console.log 'passwords do not match' if privateKey != privateKeyRepeat
-    alert @generatePassword(account.passwordKey, privateKey)[0..8] + '***...'
+  showPassword: (account, privateKey) ->
+    password = @generatePassword(account.passwordKey, privateKey)[0..8] + '***...'
+    $tmpl = $('#show-password-template').text()
+    $dialog = $ '#show-password'
+    $dialog.empty()
+    $dialog.dialog()
+        .append($tmpl)
+    $('.show-password', $dialog).val(password).select().attr('size', 1).attr('visible', 'false')
+    password = null
+    # Remove the password on time out
+    setTimeout (-> $dialog.empty(); $dialog.dialog 'close'), 15000
 
   generatePassword: (passwordKey, privateKey) ->
     sha1 = (str) ->

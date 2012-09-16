@@ -48,6 +48,7 @@
       </form>
     </article>
     <div id="generate-password" title="Generate Password"></div>
+    <div id="show-password" title="Generated Password"></div>
     <div id="delete-account" title="Delete Account"></div>
     <script type="text/html" id="account-template">
       <li class="account">
@@ -66,13 +67,21 @@
     </script>
     <script type="text/html" id="generate-password-template">
       <form action="" method="GET" id="generate-password-form">
+        Enter your private key
         <input type="password" id="private-key" class="private-key"
           required="required" />
+        Re-enter your private key
         <input type="password" id="private-key-repeat" class="private-key"
           required="required" />
         <button type="submit" id="show-password-button">
           Show
         </button>
+      </form>
+    </script>
+    <script type="text/html" id="show-password-template">
+      <form action="" method="GET" id="show-password-form">
+        Copy selection:
+        <input type="text" class="show-password" />
       </form>
     </script>
     <script type="text/html" id="delete-account-template">
