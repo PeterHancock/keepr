@@ -4,6 +4,7 @@ class Keepr
   constructor: (@jsonDrop, root) ->
     @$root = $ root
     @$accountList = $ '#account-list'
+    @$modalPlaceholder = $ '#modal-holder'
     @$accountTemplate = $('#account-template').text()
     @$generatePasswordTemplate = $('#generate-password-template').text()
     @$deleteAccountTemplate = $('#delete-account-template').text()
@@ -39,19 +40,18 @@ class Keepr
     @$accountList.append $account
 
   onDeleteAccount: (event, account) ->
-    $dialog = $ '#delete-account'
-    $dialog.empty()
-    $dialog.dialog()
-      .append(@$deleteAccountTemplate)
-    $('.confirm', $dialog).click (event) =>
+    @$modalPlaceholder.empty().append(@$deleteAccountTemplate)
+    $modal = $('.modal', @$modalPlaceholder)
+    $modal.modal 'show'
+    $('.confirm', $modal).click (event) =>
       @accounts = _.reject @accounts, (a) -> a.url == account.url
       @db.accounts = @accounts
-      $dialog.dialog 'close'
+      $modal.modal 'hide'
       @jsonDrop.save @db, () =>
         @render()
-    $('.cancel', $dialog).click (event) =>
-      $dialog.dialog 'close'
-      log 'Cancelled the deletion of account'
+    $('.cancel', $modal).click (event) =>
+      $modal.modal 'hide'
+    $modal.on 'hidden', => log 'Cancelled the deletion of account'
 
   onCreateAccount: (event) ->
     event.preventDefault()
@@ -68,30 +68,31 @@ class Keepr
     $('#new-account-form input').each -> $(this).val('')
 
   onGeneratePassword: (event, account) ->
-    $dialog = $ '#generate-password'
-    $dialog.empty()
-    $dialog.dialog()
-        .append($ @$generatePasswordTemplate)
+    $modalPlaceholder = $ '#modal-holder'
+    $modalPlaceholder.empty().append($ @$generatePasswordTemplate)
+    $modal = $('.modal', $modalPlaceholder)
+    $modal.modal 'show'
     $('#generate-password-form').submit (event) =>
       event.preventDefault()
       privateKey = $('#private-key').val()
       privateKeyRepeat = $('#private-key-repeat').val()
-      $dialog.dialog 'close'
-      $dialog.empty()
+      $modal.modal 'hide'
+      $modalPlaceholder.empty()
       return alert 'passwords do not match' if privateKey != privateKeyRepeat
       @showPassword account, privateKey
 
   showPassword: (account, privateKey) ->
-    password = @generatePassword(account.passwordKey, privateKey)[0..8] + '***...'
+    password = @generatePassword(account.passwordKey, privateKey)[0..8] + '***'
     $tmpl = $('#show-password-template').text()
-    $dialog = $ '#show-password'
-    $dialog.empty()
-    $dialog.dialog()
-        .append($tmpl)
-    $('.show-password', $dialog).val(password).select().attr('size', 1).attr('visible', 'false')
+    $modalPlaceholder = $ '#modal-holder'
+    $modalPlaceholder.empty().append($tmpl)
+    $modal = $('.modal', $modalPlaceholder)
+    $modal.modal 'show'
+    $('.show-password', $modal).val(password).select().attr('size', 1).attr('visible', 'false')
     password = null
     # Remove the password on time out
-    setTimeout (-> $dialog.empty(); $dialog.dialog 'close'), 15000
+    setTimeout (-> $modal.modal 'hide'), 15000
+    $modal.on 'hidden', => $modalPlaceholder.empty()
 
   generatePassword: (passwordKey, privateKey) ->
     sha1 = (str) ->
