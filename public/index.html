@@ -16,7 +16,7 @@
     <script type="text/javascript" src="lib/crypto/sha1-min.js"></script>
     <script type="text/javascript" src="lib/underscore-min.js"></script>
     <script type="text/coffeescript" src="./keepr.coffee"></script>
-  </head>
+</head>
   <body>
     <aside id="error-notice" class="hidden">
       <form action="#" method="GET">
@@ -48,6 +48,7 @@
       </form>
     </article>
     <div id="generate-password" title="Generate Password"></div>
+    <div id="delete-account" title="Delete Account"></div>
     <script type="text/html" id="account-template">
       <li class="account">
         <div><a class="url" href="#"  /></div>
@@ -57,7 +58,7 @@
           <button type="button" class="password-button">
             Generate password
           </button>
-          <button type="button" class="account-remove-button">
+          <button type="button" class="account-delete-button">
             <img src="images/remove.png" alt="" /> Delete
           </button>
         </span>
@@ -73,6 +74,15 @@
           Show
         </button>
       </form>
+    </script>
+    <script type="text/html" id="delete-account-template">
+        Delete account really?
+      <button type="submit" class="confirm">
+       Confirm
+      </button>
+      <button type="submit" class="cancel">
+       Cancel
+     </button>
     </script>
   </body>
 </html>

@@ -1,3 +1,4 @@
+# Main Keepr controller
 class Keepr
   # @param {JSONDrop} jsonDrop database client
   constructor: (@jsonDrop, root) ->
@@ -5,17 +6,18 @@ class Keepr
     @$accountList = $ '#account-list'
     @$accountTemplate = $('#account-template').text()
     @$generatePasswordTemplate = $('#generate-password-template').text()
+    @$deleteAccountTemplate = $('#delete-account-template').text()
     @jsonDrop.load (db) => 
-      @db = db ? @initiateDb()
+      @db = db ? initiateDb(jsonDrop)
       @passwordGenerator = Function("passwordKey, privateKey, sha1, sha1base64, urlEncode", @db.passwordGenerator)
       @accounts = @db.accounts
       @wire()
       @render()
       @$root.removeClass 'hidden'
 
-  initiateDb: () ->
+  initiateDb = (jsonDrop) ->
     db = {paswordGenerator: "alert('No password generator is set!'); null;", accounts: []}
-    @jsonDrop.save db, () =>
+    jsonDrop.save db, () =>
     db
 
   wire: () ->
@@ -33,14 +35,23 @@ class Keepr
     $('.username', $account).text account.username
     $('.password-key', $account).text account.passwordAccount
     $('.password-button', $account).click (event) => @onGeneratePassword event, account
-    $('.account-remove-button', $account).click (event) => @onRemoveAccount event, account
+    $('.account-delete-button', $account).click (event) => @onDeleteAccount event, account
     @$accountList.append $account
 
-  onRemoveAccount: (event, account) ->
-    @accounts = _.reject @accounts, (a) -> a.url == account.url
-    @db.accounts = @accounts
-    @jsonDrop.save @db, () =>
-      @render()
+  onDeleteAccount: (event, account) ->
+    $dialog = $ '#delete-account'
+    $dialog.empty()
+    $dialog.dialog()
+      .append(@$deleteAccountTemplate)
+    $('.confirm', $dialog).click (event) =>
+      @accounts = _.reject @accounts, (a) -> a.url == account.url
+      @db.accounts = @accounts
+      $dialog.dialog 'close'
+      @jsonDrop.save @db, () =>
+        @render()
+    $('.cancel', $dialog).click (event) =>
+      $dialog.dialog 'close'
+      log 'Cancelled the deletion of account'
 
   onNewAccount: (event) ->
     event.preventDefault()
@@ -89,7 +100,7 @@ urlParam = (name) ->
     results = new RegExp("[\\?&]#{name}").exec(window.location.href)
     return results?[0] || 0
 
-logger = if urlParam('__keepr-debug__')
+log = if urlParam('__keepr-debug__')
     console.log 'Keepr debug mode'
     (args...) -> console.log args...
 else
