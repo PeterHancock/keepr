@@ -23,7 +23,7 @@ class Keepr
 
   render: () ->
     @$accountList.empty()
-    @renderAccount(account) for account in @accounts
+    @renderAccount(account) for account in _.sortBy @accounts, (account) -> account.url
 
   renderAccount: (account) ->
     $account = $ @$accountTemplate
