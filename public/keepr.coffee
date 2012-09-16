@@ -33,7 +33,7 @@ class Keepr
     $('.url', $account).attr('href', account.url)
     $('.url', $account).attr('target', '_new')
     $('.username', $account).text account.username
-    $('.password-key', $account).text account.passwordAccount
+    $('.password-key', $account).text account.passwordKey
     $('.password-button', $account).click (event) => @onGeneratePassword event, account
     $('.account-delete-button', $account).click (event) => @onDeleteAccount event, account
     @$accountList.append $account
