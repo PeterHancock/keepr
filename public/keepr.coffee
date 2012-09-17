@@ -88,7 +88,7 @@ class Keepr
     $modalPlaceholder.empty().append($tmpl)
     $modal = $('.modal', $modalPlaceholder)
     $modal.modal 'show'
-    $('.show-password', $modal).val(password).select().attr('size', 1).attr('visible', 'false')
+    $('.show-password', $modal).val(password).select().attr('size', 1)
     password = null
     # Remove the password on time out
     setTimeout (-> $modal.modal 'hide'), 15000
