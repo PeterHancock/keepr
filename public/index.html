@@ -60,8 +60,7 @@
         <h1>Keepr</h1>
         <p>Quickly generate passwords for your online accounts from your private Dropbox data.  Keepr allows you to configure the password generator.</p>
       </div>
-      <ol id="account-list" class="account-list">
-      </ol>
+      <div class="accordion" id="account-list"></div>
       <form action="" method="GET" id="new-account-form">
         <input type="text" id="new-url" class="url"
           required="required" placeholder="e.g., https://www.dropbox.com" />
@@ -77,19 +76,26 @@
     <div id="delete-account" title="Delete Account"></div>
     <div id="modal-holder"></div>
     <script type="text/html" id="account-template">
-      <li class="account">
-        <div><a class="url" href="#"  /></div>
-        <span><span class="username" /></span>
-        <span><span class="password-key" /></span>
-        <span class="account-actions">
-          <button type="button" class="btn btn-primary password-button">
+      <div class="account accordion-group">
+        <div class="accordion-heading">
+          <strong><a class="url" href="#" /></strong>
+          <button type="button" class="password-button btn btn-primary btn-small">
             Generate password
           </button>
-          <button type="button" class="btn btn-danger account-delete-button">
-            <img src="images/remove.png" alt="" />
+          <button type="button" class="edit accordion-toggle btn btn-warning btn-small" data-toggle="collapse" data-parent="#accountList" href="#" >
+            edit
           </button>
-        </span>
-      </li>
+        </div>
+        <div class="accordion-body collapse">
+          <div class="accordion-inner">
+            <span><span class="username" /></span>
+            <span><span class="password-key" /></span>
+            <button type="button" class="btn btn-danger account-delete-button">
+              <img src="images/remove.png" alt="" />
+            </button>
+          </div>
+        </div>
+      </div>
     </script>
     <script type="text/html" id="generate-password-template">
       <div class="modal hide fade">
@@ -115,7 +121,7 @@
         Copy password
         </div>
         <div class="modal-body">
-          <form><input type="text" class="show-password" size="1" /></form>
+          <form><input type="text" class="show-password input-mini" /></form>
         </div>
       </div>
     </script>

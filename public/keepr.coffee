@@ -30,6 +30,9 @@ class Keepr
 
   renderAccount: (account) ->
     $account = $ @$accountTemplate
+    id = _.uniqueId('account_')
+    $('.accordion-toggle', $account).attr('href', '#' + id)
+    $('.accordion-body', $account).attr('id', id)
     $('.url', $account).text account.url
     $('.url', $account).attr('href', account.url)
     $('.url', $account).attr('target', '_new')
@@ -82,13 +85,13 @@ class Keepr
       @showPassword account, privateKey
 
   showPassword: (account, privateKey) ->
-    password = @generatePassword(account.passwordKey, privateKey)[0..8] + '***'
+    password = @generatePassword(account.passwordKey, privateKey)
     $tmpl = $('#show-password-template').text()
     $modalPlaceholder = $ '#modal-holder'
     $modalPlaceholder.empty().append($tmpl)
     $modal = $('.modal', $modalPlaceholder)
     $modal.modal 'show'
-    $('.show-password', $modal).val(password).select().attr('size', 1)
+    $('.show-password', $modal).val(password).select()
     password = null
     # Remove the password on time out
     setTimeout (-> $modal.modal 'hide'), 15000
