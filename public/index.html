@@ -3,7 +3,7 @@
   <head>
     <title>keepr - A Dropbox password manager</title>
     <link rel="icon" type="image/png" href="images/icon16.png" />
-    <!--link rel="stylesheet/less" type="text/css" href="./keepr.less" /-->
+    <link rel="stylesheet/less" type="text/css" href="./keepr.less" />
     <link rel="stylesheet" type="text/css" href="css/jquery-ui-1.8.23.custom.css" />
     <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
     <script type="text/javascript" src="lib/coffee-script.js"></script>
@@ -78,7 +78,10 @@
     <script type="text/html" id="account-template">
       <div class="account accordion-group">
         <div class="accordion-heading">
-          <strong><a class="url" href="#" /></strong>
+          <strong><a class="url" href="#">
+          <span class="url-protocol" /><span class="url-hostname" /><span class="url-path" />
+          </a>
+          </strong>
           <button type="button" class="password-button btn btn-primary btn-small">
             Generate password
           </button>

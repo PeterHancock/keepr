@@ -33,7 +33,11 @@ class Keepr
     id = _.uniqueId('account_')
     $('.accordion-toggle', $account).attr('href', '#' + id)
     $('.accordion-body', $account).attr('id', id)
-    $('.url', $account).text account.url
+    [protocol, hostname, path] = Util.splitUrl(account.url)
+    log protocol
+    $('.url-protocol', $account).text protocol + '://'
+    $('.url-hostname', $account).text hostname
+    $('.url-path', $account).text '/' + path if path
     $('.url', $account).attr('href', account.url)
     $('.url', $account).attr('target', '_new')
     $('.username', $account).text account.username
@@ -59,6 +63,12 @@ class Keepr
   onCreateAccount: (event) ->
     event.preventDefault()
     url = $('#new-url').val()
+    try
+      Util.urlParam url
+    catch error
+      log error
+      #  This is not working!!!
+      throw error
     username = $('#new-username').val()
     key = $('#new-password-key').val()
     # TODO check url does not exist and validate
@@ -110,12 +120,19 @@ class Keepr
 class Account
     constructor: ({@url, @username, @passwordKey}) ->
 
-# Utility
-urlParam = (name) ->
+
+class Util
+  @splitUrl = (url) ->
+    [protocol, remainder] = url.split '://'
+    throw new Error('Invalid url') unless remainder
+    [hostname, path...] = remainder.split('/')
+    [protocol, hostname, path.join('/')]
+
+  @urlParam = (name) ->
     results = new RegExp("[\\?&]#{name}").exec(window.location.href)
     return results?[0] || 0
 
-log = if urlParam('__keepr-debug__')
+log = if Util.urlParam('__keepr-debug__')
     console.log 'Keepr debug mode'
     (args...) -> console.log args...
 else
