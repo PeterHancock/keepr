@@ -1,3 +1,4 @@
+# vim: set tabstop=2 shiftwidth=2 softtabstop=2 expandtab :
 # Main Keepr controller
 class Keepr
   # @param {JSONDrop} jsonDrop database client
@@ -34,7 +35,6 @@ class Keepr
     $('.accordion-toggle', $account).attr('href', '#' + id)
     $('.accordion-body', $account).attr('id', id)
     [protocol, hostname, path] = Util.splitUrl(account.url)
-    log protocol
     $('.url-protocol', $account).text protocol + '://'
     $('.url-hostname', $account).text hostname
     $('.url-path', $account).text '/' + path if path
@@ -63,21 +63,18 @@ class Keepr
   onCreateAccount: (event) ->
     event.preventDefault()
     url = $('#new-url').val()
-    try
-      Util.urlParam url
-    catch error
-      log error
-      #  This is not working!!!
-      throw error
     username = $('#new-username').val()
     key = $('#new-password-key').val()
-    # TODO check url does not exist and validate
     $('#new-key-button').attr 'disabled', 'disabled'
-    account = new Account(url: url, username: username, passwordKey: key)
+    try
+      account = new Account(url: url, username: username, passwordKey: key)
+    catch error
+      alert "The url '#{url}' is invalid"
+      return
     @accounts.push account
     @jsonDrop.save @db, () =>
-      $('#new-key-button').removeAttr 'disabled'
       @render()
+      $('#new-key-button').removeAttr 'disabled'
     $('#new-account-form input').each -> $(this).val('')
 
   onGeneratePassword: (event, account) ->
@@ -119,7 +116,10 @@ class Keepr
 
 class Account
     constructor: ({@url, @username, @passwordKey}) ->
-
+      try
+        Util.splitUrl @url
+      catch error
+        throw error
 
 class Util
   @splitUrl = (url) ->
