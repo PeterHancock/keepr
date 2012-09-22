@@ -2,15 +2,14 @@
 <html>
   <head>
     <title>keepr - A Dropbox password manager</title>
-    <link rel="icon" type="image/png" href="images/icon16.png" />
-    <link rel="stylesheet/less" type="text/css" href="./keepr.less" />
+    <link rel="icon" type="image/png" href="images/icon.png" />
     <link rel="stylesheet" type="text/css" href="css/jquery-ui-1.8.23.custom.css" />
-    <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
+    <link rel="stylesheet/less" type="text/css" href="./keepr.less" />
     <script type="text/javascript" src="lib/coffee-script.js"></script>
+    <script type="text/javascript" src="lib/less.js"></script>
     <script type="text/javascript" src="lib/dropbox.js"></script>
     <script type="text/javascript" src="lib/jquery.js"></script>
     <script type="text/javascript" src="lib/jquery-ui-1.8.23.custom.min.js"></script>
-    <script type="text/javascript" src="lib/less.js"></script>
     <script type="text/javascript" src="lib/jsondrop.js"></script>
     <script type="text/javascript" src="lib/crypto/core-min.js"></script>
     <script type="text/javascript" src="lib/crypto/enc-base64-min.js"></script>
@@ -72,6 +71,9 @@
         <button type="submit" id="new-account-button" class="btn btn-primary">
           <img src="images/add.png" alt="" />
         </button>
+        <button type="button" id="cancel-new-account-button" class="btn btn-warning">
+          <img src="images/remove.png" alt="" />
+        </button>
       </form>
     </div>
     <div id="delete-account" title="Delete Account"></div>
@@ -86,7 +88,7 @@
           <button type="button" class="password-button btn btn-primary btn-small">
             Generate password
           </button>
-          <button type="button" class="edit accordion-toggle btn btn-warning btn-small" data-toggle="collapse" data-parent="#accountList" href="#" >
+          <button type="button" class="edit btn btn-warning btn-small accordion-toggle" data-toggle="collapse" data-parent="#accountList" href="#" >
             edit
           </button>
         </div>

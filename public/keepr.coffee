@@ -9,7 +9,7 @@ class Keepr
     @$accountTemplate = $('#account-template').text()
     @$generatePasswordTemplate = $('#generate-password-template').text()
     @$deleteAccountTemplate = $('#delete-account-template').text()
-    @jsonDrop.load (db) => 
+    @jsonDrop.load (db) =>
       @db = db ? initiateDb(jsonDrop)
       @passwordGenerator = Function("passwordKey, privateKey, sha1, sha1base64, urlEncode", @db.passwordGenerator)
       @accounts = @db.accounts
@@ -24,6 +24,9 @@ class Keepr
 
   wire: ->
     $('#new-account-form').submit (event) => @onCreateAccount event
+    $('#cancel-new-account-button').click (event) =>
+      event.preventDefault()
+      @clearNewAccountForm()
 
   render: ->
     @$accountList.empty()
@@ -75,6 +78,9 @@ class Keepr
     @jsonDrop.save @db, () =>
       @render()
       $('#new-key-button').removeAttr 'disabled'
+    @clearNewAccountForm()
+
+  clearNewAccountForm: ->
     $('#new-account-form input').each -> $(this).val('')
 
   onGeneratePassword: (event, account) ->
