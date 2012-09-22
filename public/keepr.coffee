@@ -9,13 +9,15 @@ class Keepr
     @$accountTemplate = $('#account-template').text()
     @$generatePasswordTemplate = $('#generate-password-template').text()
     @$deleteAccountTemplate = $('#delete-account-template').text()
-    @jsonDrop.load (db) =>
+    onLoadSuccess = (db) =>
       @db = db ? initiateDb(jsonDrop)
       @passwordGenerator = Function("passwordKey, privateKey, sha1, sha1base64, urlEncode", @db.passwordGenerator)
       @accounts = @db.accounts
       @wire()
       @render()
       @$root.removeClass 'hidden'
+    onLoadError = () -> $('#error-notice').removeClass 'hidden'
+    @jsonDrop.load onLoadSuccess, onLoadError
 
   initiateDb = (jsonDrop) ->
     db = {paswordGenerator: "alert('No password generator is set!'); null;", accounts: []}
