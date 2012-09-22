@@ -6,16 +6,15 @@
   JsonDrop = (function() {
 
     function JsonDrop(_arg) {
-      var key, secret;
-      key = _arg.key, secret = _arg.secret;
-      logger("new JSONDrop " + (new Date().getSeconds()) + " " + key + ":" + secret);
+      var key;
+      key = _arg.key;
+      logger("new JSONDrop " + (new Date().getSeconds()) + " " + key);
       this.client = new Dropbox.Client({
         key: key,
-        secret: secret,
         sandbox: true
       });
       this.client.authDriver(new Dropbox.Drivers.Redirect({
-        useHash: true
+        rememberUser: true
       }));
     }
 

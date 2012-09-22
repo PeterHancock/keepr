@@ -146,8 +146,7 @@ else
 
 $ ->
   # The Dropbox App key
-  key = 'r2mjxyg3kgewwfd'
+  key = 'ItqJc7dXdkA=|zw4NUV7gAyoyYYzAl/35HXOKgUN/4nv3Tr8MbeVi6Q=='
   # The Dropbox App secret
-  secret = 'txagd2sle3n1s3y'
-  jsonDrop = new JsonDrop(key: key, secret: secret)
+  jsonDrop = new JsonDrop(key: key)
   new Keepr jsonDrop, '#app-ui'
