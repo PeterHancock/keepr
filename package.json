@@ -1,0 +1,10 @@
+{   "name" : "keepr",
+    "version" : "0.1.0", 
+    "description": "Password management with Dropbox",
+    "dependencies" : { 
+    "underscore" : "1.4.2",
+    "coffee-script": ">= 1.3.3",
+    "dropbox": "0.6.3",
+    "async": "0.1.22",
+    "connect": "2.6.0"
+} }

@@ -9,20 +9,27 @@ class Keepr
     @$accountTemplate = $('#account-template').text()
     @$generatePasswordTemplate = $('#generate-password-template').text()
     @$deleteAccountTemplate = $('#delete-account-template').text()
-    onLoadSuccess = (db) =>
-      @db = db ? initiateDb(jsonDrop)
-      @passwordGenerator = Function("passwordKey, privateKey, sha1, sha1base64, urlEncode", @db.passwordGenerator)
-      @accounts = @db.accounts
-      @wire()
-      @render()
-      @$root.removeClass 'hidden'
-    onLoadError = () -> $('#error-notice').removeClass 'hidden'
-    @jsonDrop.load onLoadSuccess, onLoadError
-
-  initiateDb = (jsonDrop) ->
-    db = {paswordGenerator: "alert('No password generator is set!'); null;", accounts: []}
-    jsonDrop.save db, () =>
-    db
+    onLoad = _.after 2, (err) =>
+        if err
+          $('#error-notice').removeClass 'hidden'
+          return alert err
+        @wire()
+        @render()
+        @$root.removeClass 'hidden'
+    @jsonDrop.get('passwordGenerator').getVal (err, val) =>
+      return onLoad(err) if err
+      @passwordGenerator = Function("passwordKey, privateKey, sha1, sha1base64, urlEncode", val)
+      onLoad()
+    @jsonDrop.get('accounts').map(
+      (val, node) ->
+        account = new Account(val)
+        console.log node
+        account.node = node
+        account
+      (err, accounts) =>
+        return onLoad(err) if err
+        @accounts = accounts
+        onLoad())
 
   wire: ->
     $('#new-account-form').submit (event) => @onCreateAccount event
@@ -57,9 +64,8 @@ class Keepr
     $modal.modal 'show'
     $('.confirm', $modal).click (event) =>
       @accounts = _.reject @accounts, (a) -> a.url == account.url
-      @db.accounts = @accounts
       $modal.modal 'hide'
-      @jsonDrop.save @db, () =>
+      account.node.remove (err) =>
         @render()
     $('.cancel', $modal).click (event) =>
       $modal.modal 'hide'
@@ -77,10 +83,12 @@ class Keepr
       alert "The url '#{url}' is invalid"
       return
     @accounts.push account
-    @jsonDrop.save @db, () =>
+    @jsonDrop.get('accounts').pushVal account, (err, node) =>
+      return alert err if err
+      account.node = node
       @render()
       $('#new-key-button').removeAttr 'disabled'
-    @clearNewAccountForm()
+      @clearNewAccountForm()
 
   clearNewAccountForm: ->
     $('#new-account-form input').each -> $(this).val('')
@@ -128,6 +136,7 @@ class Account
         Util.splitUrl @url
       catch error
         throw error
+      @node = null
 
 class Util
   @splitUrl = (url) ->

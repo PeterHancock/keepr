@@ -4,10 +4,9 @@
     __slice = [].slice;
 
   Keepr = (function() {
-    var initiateDb;
 
     function Keepr(jsonDrop, root) {
-      var onLoadError, onLoadSuccess,
+      var onLoad,
         _this = this;
       this.jsonDrop = jsonDrop;
       this.$root = $(root);
@@ -16,30 +15,36 @@
       this.$accountTemplate = $('#account-template').text();
       this.$generatePasswordTemplate = $('#generate-password-template').text();
       this.$deleteAccountTemplate = $('#delete-account-template').text();
-      onLoadSuccess = function(db) {
-        _this.db = db != null ? db : initiateDb(jsonDrop);
-        _this.passwordGenerator = Function("passwordKey, privateKey, sha1, sha1base64, urlEncode", _this.db.passwordGenerator);
-        _this.accounts = _this.db.accounts;
+      onLoad = _.after(2, function(err) {
+        if (err) {
+          $('#error-notice').removeClass('hidden');
+          return alert(err);
+        }
         _this.wire();
         _this.render();
         return _this.$root.removeClass('hidden');
-      };
-      onLoadError = function() {
-        return $('#error-notice').removeClass('hidden');
-      };
-      this.jsonDrop.load(onLoadSuccess, onLoadError);
+      });
+      this.jsonDrop.get('passwordGenerator').getVal(function(err, val) {
+        if (err) {
+          return onLoad(err);
+        }
+        _this.passwordGenerator = Function("passwordKey, privateKey, sha1, sha1base64, urlEncode", val);
+        return onLoad();
+      });
+      this.jsonDrop.get('accounts').map(function(val, node) {
+        var account;
+        account = new Account(val);
+        console.log(node);
+        account.node = node;
+        return account;
+      }, function(err, accounts) {
+        if (err) {
+          return onLoad(err);
+        }
+        _this.accounts = accounts;
+        return onLoad();
+      });
     }
-
-    initiateDb = function(jsonDrop) {
-      var db,
-        _this = this;
-      db = {
-        paswordGenerator: "alert('No password generator is set!'); null;",
-        accounts: []
-      };
-      jsonDrop.save(db, function() {});
-      return db;
-    };
 
     Keepr.prototype.wire = function() {
       var _this = this;
@@ -102,9 +107,8 @@
         _this.accounts = _.reject(_this.accounts, function(a) {
           return a.url === account.url;
         });
-        _this.db.accounts = _this.accounts;
         $modal.modal('hide');
-        return _this.jsonDrop.save(_this.db, function() {
+        return account.node.remove(function(err) {
           return _this.render();
         });
       });
@@ -135,11 +139,15 @@
         return;
       }
       this.accounts.push(account);
-      this.jsonDrop.save(this.db, function() {
+      return this.jsonDrop.get('accounts').pushVal(account, function(err, node) {
+        if (err) {
+          return alert(err);
+        }
+        account.node = node;
         _this.render();
-        return $('#new-key-button').removeAttr('disabled');
+        $('#new-key-button').removeAttr('disabled');
+        return _this.clearNewAccountForm();
       });
-      return this.clearNewAccountForm();
     };
 
     Keepr.prototype.clearNewAccountForm = function() {
@@ -215,6 +223,7 @@
       } catch (error) {
         throw error;
       }
+      this.node = null;
     }
 
     return Account;
