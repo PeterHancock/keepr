@@ -24,7 +24,6 @@ class Keepr
     @jsonDrop.get('accounts').map(
       (val, node) ->
         account = new Account(val)
-        console.log node
         account.node = node
         account
       (err, accounts) =>
@@ -129,7 +128,6 @@ class Keepr
     urlEncode = (str) ->
       str.replace('+', '-').replace('/', '_')
     @passwordGenerator(passwordKey, privateKey, sha1, sha1base64, urlEncode)
-
 
   # Called when the user wants to log out of the application.
   logout: () ->

@@ -37,7 +37,6 @@
       this.jsonDrop.get('accounts').map(function(val, node) {
         var account;
         account = new Account(val);
-        console.log(node);
         account.node = node;
         return account;
       }, function(err, accounts) {
