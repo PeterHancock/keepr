@@ -1,1 +1,2133 @@
-(function(){var e,t,n,r,i,s,o,u,a,f,l,c,h,p,d,v,m,g,y,b,w,E,S,x,T,N,C,k,L,A,O,M={}.hasOwnProperty;t=function(){function e(e,t,n){var r;this.method=t,this.url=n,this.status=e.status,e.responseType?r=e.response||e.responseText:r=e.responseText;if(r)try{this.responseText=r.toString(),this.response=JSON.parse(r)}catch(i){this.response=null}else this.responseText="(no response)",this.response=null}return e.prototype.toString=function(){return"Dropbox API error "+this.status+" from "+this.method+" "+this.url+" :: "+this.responseText},e.prototype.inspect=function(){return this.toString()},e}(),typeof window!="undefined"&&window!==null?(w=window.atob,x=window.btoa):(w=function(e){var t,n;return t=new Buffer(e,"base64"),function(){var e,r,i;i=[];for(n=e=0,r=t.length;0<=r?e<r:e>r;n=0<=r?++e:--e)i.push(String.fromCharCode(t[n]));return i}().join("")},x=function(e){var t,n;return t=new Buffer(function(){var t,r,i;i=[];for(n=t=0,r=e.length;0<=r?t<r:t>r;n=0<=r?++t:--t)i.push(e.charCodeAt(n));return i}()),t.toString("base64")}),r=function(){function t(e){this.sandbox=e.sandbox||!1,this.apiServer=e.server||this.defaultApiServer(),this.authServer=e.authServer||this.defaultAuthServer(),this.fileServer=e.fileServer||this.defaultFileServer(),this.oauth=new o(e),this.uid=null,this.authState=null,this.authError=null,this._credentials=null,this.setCredentials(e),this.setupUrls()}return t.prototype.authDriver=function(e){return this.authDriver=e,this},t.prototype.dropboxUid=function(){return this.uid},t.prototype.credentials=function(e){return this._credentials||this.computeCredentials(),this._credentials},t.prototype.authenticate=function(n){var r,i,s=this;return r=null,i=function(){var o;if(r!==s.authState){r=s.authState;if(s.authDriver.onAuthStateChange)return s.authDriver.onAuthStateChange(s,i)}switch(s.authState){case t.RESET:return s.requestToken(function(e,n){var r,o;return e?(s.authError=e,s.authState=t.ERROR):(r=n.oauth_token,o=n.oauth_token_secret,s.oauth.setToken(r,o),s.authState=t.REQUEST),s._credentials=null,i()});case t.REQUEST:return o=s.authorizeUrl(s.oauth.token),s.authDriver.doAuthorize(o,s.oauth.token,s.oauth.tokenSecret,function(){return s.authState=t.AUTHORIZED,s._credentials=null,i()});case t.AUTHORIZED:return s.getAccessToken(function(e,n){return e?(s.authError=e,s.authState=t.ERROR):(s.oauth.setToken(n.oauth_token,n.oauth_token_secret),s.uid=n.uid,s.authState=t.DONE),s._credentials=null,i()});case t.DONE:return n(null,s);case e.SIGNED_OFF:return s.reset(),i();case t.ERROR:return n(s.authError)}},i(),this},t.prototype.signOut=function(e){var n,r,i=this;return r=this.urls.signOut,n=this.oauth.addAuthParams("POST",r,{}),d.request("POST",r,n,null,function(n){return n?e(n):(i.reset(),i.authState=t.SIGNED_OFF,i.authDriver.onAuthStateChange?i.authDriver.onAuthStateChange(i,function(){return e(n)}):e(n))})},t.prototype.signOff=function(e){return this.signOut(e)},t.prototype.getUserInfo=function(e){var t,n;return n=this.urls.accountInfo,t=this.oauth.addAuthParams("GET",n,{}),d.request("GET",n,t,null,function(t,n){return e(t,p.parse(n),n)})},t.prototype.readFile=function(e,t,n){var r,i,s;return!n&&typeof t=="function"&&(n=t,t=null),s=""+this.urls.getFile+"/"+this.urlEncodePath(e),r={},i=null,t&&(t.versionTag?r.rev=t.versionTag:t.rev&&(r.rev=t.rev),t.blob&&(i="blob"),t.binary&&(i="b")),this.oauth.addAuthParams("GET",s,r),d.request2("GET",s,r,null,null,i,function(e,t,r){return n(e,t,h.parse(r))})},t.prototype.writeFile=function(e,t,n,r){var i;return!r&&typeof n=="function"&&(r=n,n=null),i=d.canSendForms&&typeof t=="object",i?this.writeFileUsingForm(e,t,n,r):this.writeFileUsingPut(e,t,n,r)},t.prototype.writeFileUsingForm=function(e,t,n,r){var i,s,o,u,a;u=e.lastIndexOf("/"),u===-1?(s=e,e=""):(s=e.substring(u),e=e.substring(0,u)),a=""+this.urls.postFile+"/"+this.urlEncodePath(e),o={file:s};if(n){n.noOverwrite&&(o.overwrite="false");if(n.lastVersionTag)o.parent_rev=n.lastVersionTag;else if(n.parentRev||n.parent_rev)o.parent_rev=n.parentRev||n.parent_rev}return this.oauth.addAuthParams("POST",a,o),delete o.file,i={name:"file",value:t,fileName:s,contentType:"application/octet-stream"},d.multipartRequest(a,i,o,null,function(e,t){return r(e,h.parse(t))})},t.prototype.writeFileUsingPut=function(e,t,n,r){var i,s;s=""+this.urls.putFile+"/"+this.urlEncodePath(e),i={};if(n){n.noOverwrite&&(i.overwrite="false");if(n.lastVersionTag)i.parent_rev=n.lastVersionTag;else if(n.parentRev||n.parent_rev)i.parent_rev=n.parentRev||n.parent_rev}return this.oauth.addAuthParams("POST",s,i),d.request2("POST",s,i,null,t,null,function(e,t){return r(e,h.parse(t))})},t.prototype.stat=function(e,t,n){var r,i;!n&&typeof t=="function"&&(n=t,t=null),i=""+this.urls.metadata+"/"+this.urlEncodePath(e),r={};if(t){t.version!=null&&(r.rev=t.version);if(t.removed||t.deleted)r.include_deleted="true";t.readDir&&(r.list="true",t.readDir!==!0&&(r.file_limit=t.readDir.toString())),t.cacheHash&&(r.hash=t.cacheHash)}return r.include_deleted||(r.include_deleted="false"),r.list||(r.list="false"),this.oauth.addAuthParams("GET",i,r),d.request("GET",i,r,null,function(e,t){var r,i,s;return s=h.parse(t),(t!=null?t.contents:void 0)?r=function(){var e,n,r,s;r=t.contents,s=[];for(e=0,n=r.length;e<n;e++)i=r[e],s.push(h.parse(i));return s}():r=void 0,n(e,s,r)})},t.prototype.readdir=function(e,t,n){var r;return!n&&typeof t=="function"&&(n=t,t=null),r={readDir:!0},t&&(t.limit!=null&&(r.readDir=t.limit),t.versionTag&&(r.versionTag=t.versionTag)),this.stat(e,r,function(e,t,r){var i,s;return r?i=function(){var e,t,n;n=[];for(e=0,t=r.length;e<t;e++)s=r[e],n.push(s.name);return n}():i=null,n(e,i,t,r)})},t.prototype.metadata=function(e,t,n){return this.stat(e,t,n)},t.prototype.makeUrl=function(e,t,n){var r,i,s;return!n&&typeof t=="function"&&(n=t,t=null),e=this.urlEncodePath(e),t&&t.download?(r=!0,s=""+this.urls.media+"/"+e):(r=!1,s=""+this.urls.shares+"/"+e),t&&t.long?i={short_url:"false"}:i={},this.oauth.addAuthParams("POST",s,i),d.request("POST",s,i,null,function(e,t){return n(e,a.parse(t,r))})},t.prototype.history=function(e,t,n){var r,i;return!n&&typeof t=="function"&&(n=t,t=null),i=""+this.urls.revisions+"/"+this.urlEncodePath(e),r={},t&&t.limit!=null&&(r.rev_limit=t.limit),this.oauth.addAuthParams("GET",i,r),d.request("GET",i,r,null,function(e,t){var r,i;return t?i=function(){var e,n,i;i=[];for(e=0,n=t.length;e<n;e++)r=t[e],i.push(h.parse(r));return i}():i=void 0,n(e,i)})},t.prototype.revisions=function(e,t,n){return this.history(e,t,n)},t.prototype.thumbnailUrl=function(t,n){var r,i;return i=""+this.urls.thumbnails+"/"+this.urlEncodePath(t),r={},n&&(n.format?r.format=n.format:n.png&&(r.format="png"),n.size&&(r.size=n.size)),this.oauth.addAuthParams("GET",i,r),""+i+"?"+e.Xhr.urlEncode(r)},t.prototype.readThumbnail=function(e,t,n){var r,i;return!n&&typeof t=="function"&&(n=t,t=null),i=this.thumbnailUrl(e,t),r="b",t&&t.blob&&(r="blob"),d.request2("GET",i,{},null,null,r,function(e,t,r){return n(e,t,h.parse(r))})},t.prototype.revertFile=function(e,t,n){var r,i;return i=""+this.urls.restore+"/"+this.urlEncodePath(e),r={rev:t},this.oauth.addAuthParams("POST",i,r),d.request("POST",i,r,null,function(e,t){return n(e,h.parse(t))})},t.prototype.restore=function(e,t,n){return this.revertFile(e,t,n)},t.prototype.findByName=function(e,t,n,r){var i,s;!r&&typeof n=="function"&&(r=n,n=null),s=""+this.urls.search+"/"+this.urlEncodePath(e),i={query:t};if(n){n.limit!=null&&(i.file_limit=n.limit);if(n.removed||n.deleted)i.include_deleted=!0}return this.oauth.addAuthParams("GET",s,i),d.request("GET",s,i,null,function(e,t){var n,i;return t?i=function(){var e,r,i;i=[];for(e=0,r=t.length;e<r;e++)n=t[e],i.push(h.parse(n));return i}():i=void 0,r(e,i)})},t.prototype.search=function(e,t,n,r){return this.findByName(e,t,n,r)},t.prototype.makeCopyReference=function(e,t){var n,r;return r=""+this.urls.copyRef+"/"+this.urlEncodePath(e),n=this.oauth.addAuthParams("GET",r,{}),d.request("GET",r,n,null,function(e,n){return t(e,i.parse(n))})},t.prototype.copyRef=function(e,t){return this.makeCopyReference(e,t)},t.prototype.pullChanges=function(t,n){var r,i;return!n&&typeof t=="function"&&(n=t,t=null),i=this.urls.delta,r={},t?t.cursorTag?r={cursor:t.cursorTag}:r={cursor:t}:r={},this.oauth.addAuthParams("POST",i,r),d.request("POST",i,r,null,function(t,r){return n(t,e.PulledChanges.parse(r))})},t.prototype.delta=function(e,t){return this.pullChanges(e,t)},t.prototype.mkdir=function(e,t){var n,r;return r=this.urls.fileopsCreateFolder,n={root:this.fileRoot,path:this.normalizePath(e)},this.oauth.addAuthParams("POST",r,n),d.request("POST",r,n,null,function(e,n){return t(e,h.parse(n))})},t.prototype.remove=function(e,t){var n,r;return r=this.urls.fileopsDelete,n={root:this.fileRoot,path:this.normalizePath(e)},this.oauth.addAuthParams("POST",r,n),d.request("POST",r,n,null,function(e,n){return t(e,h.parse(n))})},t.prototype.unlink=function(e,t){return this.remove(e,t)},t.prototype["delete"]=function(e,t){return this.remove(e,t)},t.prototype.copy=function(e,t,n){var r,s,o;return!n&&typeof r=="function"&&(n=r,r=null),s={root:this.fileRoot,to_path:this.normalizePath(t)},e instanceof i?s.from_copy_ref=e.tag:s.from_path=this.normalizePath(e),o=this.urls.fileopsCopy,this.oauth.addAuthParams("POST",o,s),d.request("POST",o,s,null,function(e,t){return n(e,h.parse(t))})},t.prototype.move=function(e,t,n){var r,i,s;return!n&&typeof r=="function"&&(n=r,r=null),e=this.normalizePath(e),t=this.normalizePath(t),s=this.urls.fileopsMove,i={root:this.fileRoot,from_path:e,to_path:t},this.oauth.addAuthParams("POST",s,i),d.request("POST",s,i,null,function(e,t){return n(e,h.parse(t))})},t.prototype.reset=function(){return this.uid=null,this.oauth.setToken(null,""),this.authState=t.RESET,this.authError=null,this._credentials=null,this},t.prototype.setCredentials=function(e){return this.oauth.reset(e),this.uid=e.uid||null,e.authState?this.authState=e.authState:e.token?this.authState=t.DONE:this.authState=t.RESET,this.authError=null,this._credentials=null,this},t.prototype.appHash=function(){return this.oauth.appHash()},t.prototype.setupUrls=function(){return this.fileRoot=this.sandbox?"sandbox":"dropbox",this.urls={requestToken:""+this.apiServer+"/1/oauth/request_token",authorize:""+this.authServer+"/1/oauth/authorize",accessToken:""+this.apiServer+"/1/oauth/access_token",signOut:""+this.apiServer+"/1/unlink_access_token",accountInfo:""+this.apiServer+"/1/account/info",getFile:""+this.fileServer+"/1/files/"+this.fileRoot,postFile:""+this.fileServer+"/1/files/"+this.fileRoot,putFile:""+this.fileServer+"/1/files_put/"+this.fileRoot,metadata:""+this.apiServer+"/1/metadata/"+this.fileRoot,delta:""+this.apiServer+"/1/delta",revisions:""+this.apiServer+"/1/revisions/"+this.fileRoot,restore:""+this.apiServer+"/1/restore/"+this.fileRoot,search:""+this.apiServer+"/1/search/"+this.fileRoot,shares:""+this.apiServer+"/1/shares/"+this.fileRoot,media:""+this.apiServer+"/1/media/"+this.fileRoot,copyRef:""+this.apiServer+"/1/copy_ref/"+this.fileRoot,thumbnails:""+this.fileServer+"/1/thumbnails/"+this.fileRoot,fileopsCopy:""+this.apiServer+"/1/fileops/copy",fileopsCreateFolder:""+this.apiServer+"/1/fileops/create_folder",fileopsDelete:""+this.apiServer+"/1/fileops/delete",fileopsMove:""+this.apiServer+"/1/fileops/move"}},t.ERROR=0,t.RESET=1,t.REQUEST=2,t.AUTHORIZED=3,t.DONE=4,t.SIGNED_OFF=5,t.prototype.urlEncodePath=function(e){return d.urlEncodeValue(this.normalizePath(e)).replace(/%2F/gi,"/")},t.prototype.normalizePath=function(e){var t;if(e.substring(0,1)==="/"){t=1;while(e.substring(t,t+1)==="/")t+=1;return e.substring(t)}return e},t.prototype.requestToken=function(e){var t;return t=this.oauth.addAuthParams("POST",this.urls.requestToken,{}),d.request("POST",this.urls.requestToken,t,null,e)},t.prototype.authorizeUrl=function(e){var t;return t={oauth_token:e,oauth_callback:this.authDriver.url()},""+this.urls.authorize+"?"+d.urlEncode(t)},t.prototype.getAccessToken=function(e){var t;return t=this.oauth.addAuthParams("POST",this.urls.accessToken,{}),d.request("POST",this.urls.accessToken,t,null,e)},t.prototype.defaultApiServer=function(){return"https://api.dropbox.com"},t.prototype.defaultAuthServer=function(){return this.apiServer.replace("api.","www.")},t.prototype.defaultFileServer=function(){return this.apiServer.replace("api.","api-content.")},t.prototype.computeCredentials=function(){var e;return e={key:this.oauth.key,sandbox:this.sandbox},this.oauth.secret&&(e.secret=this.oauth.secret),this.oauth.token&&(e.token=this.oauth.token,e.tokenSecret=this.oauth.tokenSecret),this.uid&&(e.uid=this.uid),this.authState!==t.ERROR&&this.authState!==t.RESET&&this.authState!==t.DONE&&this.authState!==t.SIGNED_OFF&&(e.authState=this.authState),this.apiServer!==this.defaultApiServer()&&(e.server=this.apiServer),this.authServer!==this.defaultAuthServer()&&(e.authServer=this.authServer),this.fileServer!==this.defaultFileServer()&&(e.fileServer=this.fileServer),this._credentials=e},t}(),n=function(){function e(){}return e.prototype.url=function(){return"https://some.url"},e.prototype.doAuthorize=function(e,t,n,r){return r("oauth-token")},e.prototype.onAuthStateChange=function(e,t){return t()},e}(),c=function(){function t(e){this.rememberUser=(e!=null?e.rememberUser:void 0)||!1,this.scope=(e!=null?e.scope:void 0)||"default",this.useQuery=(e!=null?e.useQuery:void 0)||!1,this.receiverUrl=this.computeUrl(e),this.tokenRe=new RegExp("(#|\\?|&)oauth_token=([^&#]+)(&|#|$)")}return t.prototype.url=function(){return this.receiverUrl},t.prototype.doAuthorize=function(e,t,n,r){return window.location.assign(e)},t.prototype.onAuthStateChange=function(t,n){var i,s=this;this.storageKey="dropbox-auth:"+this.scope+":"+t.appHash();switch(t.authState){case e.Client.RESET:if(!(i=this.loadCredentials()))return n();if(i.authState)return i.token===this.locationToken()&&(i.authState===r.REQUEST&&(this.forgetCredentials(),i.authState=r.AUTHORIZED),t.setCredentials(i)),n();if(!this.rememberUser)return this.forgetCredentials(),n();return t.setCredentials(i),t.getUserInfo(function(e,r){return e&&(t.reset(),s.forgetCredentials()),n()});case r.REQUEST:return this.storeCredentials(t.credentials()),n();case r.DONE:return this.rememberUser&&this.storeCredentials(t.credentials()),n();case r.SIGNED_OFF:return this.forgetCredentials(),n();case r.ERROR:return this.forgetCredentials(),n();default:return n()}},t.prototype.computeUrl=function(){var e,n,r,i;return i="_dropboxjs_scope="+encodeURIComponent(this.scope),n=t.currentLocation(),n.indexOf("#")===-1?e=null:(r=n.split("#",2),n=r[0],e=r[1]),this.useQuery?n.indexOf("?")===-1?n+="?"+i:n+="&"+i:e="?"+i,e?n+"#"+e:n},t.prototype.locationToken=function(){var e,n,r;return e=t.currentLocation(),r="_dropboxjs_scope="+encodeURIComponent(this.scope)+"&",(typeof e.indexOf=="function"?e.indexOf(r):void 0)===-1?null:(n=this.tokenRe.exec(e),n?decodeURIComponent(n[2]):null)},t.currentLocation=function(){return window.location.href},t.prototype.storeCredentials=function(e){return localStorage.setItem(this.storageKey,JSON.stringify(e))},t.prototype.loadCredentials=function(){var e;e=localStorage.getItem(this.storageKey);if(!e)return null;try{return JSON.parse(e)}catch(t){return null}},t.prototype.forgetCredentials=function(){return localStorage.removeItem(this.storageKey)},t}(),u=function(){function e(e){this.receiverUrl=this.computeUrl(e),this.tokenRe=new RegExp("(#|\\?|&)oauth_token=([^&#]+)(&|#|$)")}return e.prototype.doAuthorize=function(e,t,n,r){return this.listenForMessage(t,r),this.openWindow(e)},e.prototype.url=function(){return this.receiverUrl},e.prototype.computeUrl=function(t){var n;if(t){if(t.receiverUrl)return t.receiverUrl;if(t.receiverFile)return n=e.currentLocation().split("/"),n[n.length-1]=t.receiverFile,n.join("/")+"#"}return e.currentLocation()},e.currentLocation=function(){return window.location.href},e.prototype.openWindow=function(e){return window.open(e,"_dropboxOauthSigninWindow",this.popupWindowSpec(980,980))},e.prototype.popupWindowSpec=function(e,t){var n,r,i,s,o,u,a,f,l,c;return o=(a=window.screenX)!=null?a:window.screenLeft,u=(f=window.screenY)!=null?f:window.screenTop,s=(l=window.outerWidth)!=null?l:document.documentElement.clientWidth,n=(c=window.outerHeight)!=null?c:document.documentElement.clientHeight,r=Math.round(o+(s-e)/2),i=Math.round(u+(n-t)/2.5),"width="+e+",height="+t+","+("left="+r+",top="+i)+"dialog=yes,dependent=yes,scrollbars=yes,location=yes"},e.prototype.listenForMessage=function(e,t){var n,r;return r=this.tokenRe,n=function(i){var s;s=r.exec(i.data.toString());if(s&&decodeURIComponent(s[2])===e)return t(),window.removeEventListener("message",n)},window.addEventListener("message",n,!1)},e}(),s=function(){function e(e){this.port=(e!=null?e.port:void 0)||8912,this.faviconFile=(e!=null?e.favicon:void 0)||null,this.fs=require("fs"),this.http=require("http"),this.open=require("open"),this.callbacks={},this.urlRe=new RegExp("^/oauth_callback\\?"),this.tokenRe=new RegExp("(\\?|&)oauth_token=([^&]+)(&|$)"),this.createApp()}return e.prototype.url=function(){return"http://localhost:"+this.port+"/oauth_callback"},e.prototype.doAuthorize=function(e,t,n,r){return this.callbacks[t]=r,this.openBrowser(e)},e.prototype.openBrowser=function(e){if(!e.match(/^https?:\/\//))throw new Error("Not a http/https URL: "+e);return this.open(e)},e.prototype.createApp=function(){var e=this;return this.app=this.http.createServer(function(t,n){return e.doRequest(t,n)}),this.app.listen(this.port)},e.prototype.closeServer=function(){return this.app.close()},e.prototype.doRequest=function(e,t){var n,r,i,s=this;return this.urlRe.exec(e.url)&&(r=this.tokenRe.exec(e.url),r&&(i=decodeURIComponent(r[2]),this.callbacks[i]&&(this.callbacks[i](),delete this.callbacks[i]))),n="",e.on("data",function(e){return n+=e}),e.on("end",function(){return s.faviconFile&&e.url==="/favicon.ico"?s.sendFavicon(t):s.closeBrowser(t)})},e.prototype.closeBrowser=function(e){var t;return t='<!doctype html>\n<script type="text/javascript">window.close();</script>\n<p>Please close this window.</p>',e.writeHead(200,{"Content-Length":t.length,"Content-Type":"text/html"}),e.write(t),e.end},e.prototype.sendFavicon=function(e){return this.fs.readFile(this.faviconFile,function(t,n){return e.writeHead(200,{"Content-Length":n.length,"Content-Type":"image/x-icon"}),e.write(n),e.end})},e}(),e=function(){function e(e){this.client=new r(e)}return e}(),E=function(e,t){return b(C(A(e),A(t),e.length,t.length))},S=function(e){return b(L(A(e),e.length))};if(typeof window=="undefined"||window===null)T=require("crypto"),E=function(e,t){var n;return n=T.createHmac("sha1",t),n.update(e),n.digest("base64")},S=function(e){var t;return t=T.createHash("sha1"),t.update(e),t.digest("base64")};C=function(e,t,n,r){var i,s,o,u;return t.length>16&&(t=L(t,r)),o=function(){var e,n;n=[];for(s=e=0;e<16;s=++e)n.push(t[s]^909522486);return n}(),u=function(){var e,n;n=[];for(s=e=0;e<16;s=++e)n.push(t[s]^1549556828);return n}(),i=L(o.concat(e),64+n),L(u.concat(i),84)},L=function(e,t){var n,r,i,s,o,u,a,f,l,c,h,p,d,v,m,g,b,w;e[t>>2]|=1<<31-((t&3)<<3),e[(t+8>>6<<4)+15]=t<<3,g=Array(80),n=1732584193,i=-271733879,o=-1732584194,a=271733878,l=-1009589776,p=0,m=e.length;while(p<m){r=n,s=i,u=o,f=a,c=l;for(d=w=0;w<80;d=++w)d<16?g[d]=e[p+d]:g[d]=k(g[d-3]^g[d-8]^g[d-14]^g[d-16],1),d<20?(h=i&o|~i&a,v=1518500249):d<40?(h=i^o^a,v=1859775393):d<60?(h=i&o|i&a|o&a,v=-1894007588):(h=i^o^a,v=-899497514),b=y(y(k(n,5),h),y(y(l,g[d]),v)),l=a,a=o,o=k(i,30),i=n,n=b;n=y(n,r),i=y(i,s),o=y(o,u),a=y(a,f),l=y(l,c),p+=16}return[n,i,o,a,l]},k=function(e,t){return e<<t|e>>>32-t},y=function(e,t){var n,r;return r=(e&65535)+(t&65535),n=(e>>16)+(t>>16)+(r>>16),n<<16|r&65535},b=function(e){var t,n,r,i,s;i="",t=0,r=e.length*4;while(t<r)n=t,s=(e[n>>2]>>(3-(n&3)<<3)&255)<<16,n+=1,s|=(e[n>>2]>>(3-(n&3)<<3)&255)<<8,n+=1,s|=e[n>>2]>>(3-(n&3)<<3)&255,i+=O[s>>18&63],i+=O[s>>12&63],t+=1,t>=r?i+="=":i+=O[s>>6&63],t+=1,t>=r?i+="=":i+=O[s&63],t+=1;return i},O="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",A=function(e){var t,n,r,i,s;t=[],r=255;for(n=i=0,s=e.length;0<=s?i<s:i>s;n=0<=s?++i:--i)t[n>>2]|=(e.charCodeAt(n)&r)<<(3-(n&3)<<3);return t},o=function(){function e(e){this.key=this.k=null,this.secret=this.s=null,this.token=null,this.tokenSecret=null,this._appHash=null,this.reset(e)}return e.prototype.reset=function(e){var t,n,r,i;return e.secret?(this.k=this.key=e.key,this.s=this.secret=e.secret,this._appHash=null):e.key&&(this.key=e.key,this.secret=null,r=w(N(this.key).split("|",2)[1]),i=r.split("?",2),t=i[0],n=i[1],this.k=decodeURIComponent(t),this.s=decodeURIComponent(n),this._appHash=null),e.token?this.setToken(e.token,e.tokenSecret):this.setToken(null,"")},e.prototype.setToken=function(e,t){if(e&&!t)throw new Error("No secret supplied with the user token");return this.token=e,this.tokenSecret=t||"",this.hmacKey=d.urlEncodeValue(this.s)+"&"+d.urlEncodeValue(t),null},e.prototype.authHeader=function(e,t,n){var r,i,s,o,u,a;this.addAuthParams(e,t,n),i=[];for(s in n)o=n[s],s.substring(0,6)==="oauth_"&&i.push(s);i.sort(),r=[];for(u=0,a=i.length;u<a;u++)s=i[u],r.push(d.urlEncodeValue(s)+'="'+d.urlEncodeValue(n[s])+'"'),delete n[s];return"OAuth "+r.join(",")},e.prototype.addAuthParams=function(e,t,n){return this.boilerplateParams(n),n.oauth_signature=this.signature(e,t,n),n},e.prototype.boilerplateParams=function(e){return e.oauth_consumer_key=this.k,e.oauth_nonce=this.nonce(),e.oauth_signature_method="HMAC-SHA1",this.token&&(e.oauth_token=this.token),e.oauth_timestamp=Math.floor(Date.now()/1e3),e.oauth_version="1.0",e},e.prototype.nonce=function(){return Date.now().toString(36)+Math.random().toString(36)},e.prototype.signature=function(e,t,n){var r;return r=e.toUpperCase()+"&"+d.urlEncodeValue(t)+"&"+d.urlEncodeValue(d.urlEncode(n)),E(r,this.hmacKey)},e.prototype.appHash=function(){return this._appHash?this._appHash:this._appHash=S(this.k).replace(/\=/g,"")},e}(),Date.now==null&&(Date.now=function(){return(new Date).getTime()}),N=function(e,t){var n,r,i,s,o,u,a,f,l,c,h,p;t?(t=[encodeURIComponent(e),encodeURIComponent(t)].join("?"),e=function(){var t,r,i;i=[];for(n=t=0,r=e.length/2;0<=r?t<r:t>r;n=0<=r?++t:--t)i.push((e.charCodeAt(n*2)&15)*16+(e.charCodeAt(n*2+1)&15));return i}()):(c=e.split("|",2),e=c[0],t=c[1],e=w(e),e=function(){var t,r,i;i=[];for(n=t=0,r=e.length;0<=r?t<r:t>r;n=0<=r?++t:--t)i.push(e.charCodeAt(n));return i}(),t=w(t)),s=function(){p=[];for(f=0;f<256;f++)p.push(f);return p}.apply(this),u=0;for(o=l=0;l<256;o=++l)u=(u+s[n]+e[o%e.length])%256,h=[s[u],s[o]],s[o]=h[0],s[u]=h[1];return o=u=0,i=function(){var e,n,i,f;f=[];for(a=e=0,n=t.length;0<=n?e<n:e>n;a=0<=n?++e:--e)o=(o+1)%256,u=(u+s[o])%256,i=[s[u],s[o]],s[o]=i[0],s[u]=i[1],r=s[(s[o]+s[u])%256],f.push(String.fromCharCode((r^t.charCodeAt(a))%256));return f}(),e=function(){var t,r,i;i=[];for(n=t=0,r=e.length;0<=r?t<r:t>r;n=0<=r?++t:--t)i.push(String.fromCharCode(e[n]));return i}(),[x(e.join("")),x(i.join(""))].join("|")},l=function(){function e(e){var t;this.blankSlate=e.reset||!1,this.cursorTag=e.cursor,this.shouldPullAgain=e.has_more,this.shouldBackOff=!this.shouldPullAgain,e.cursor&&e.cursor.length?this.changes=function(){var n,r,i,s;i=e.entries,s=[];for(n=0,r=i.length;n<r;n++)t=i[n],s.push(f.parse(t));return s}():this.changes=[]}return e.parse=function(t){return t&&typeof t=="object"?new e(t):t},e.prototype.blankSlate=void 0,e.prototype.cursorTag=void 0,e.prototype.changes=void 0,e.prototype.shouldPullAgain=void 0,e.prototype.shouldBackOff=void 0,e}(),f=function(){function e(e){this.path=e[0],this.stat=h.parse(e[1]),this.stat?this.wasRemoved=!1:(this.stat=null,this.wasRemoved=!0)}return e.parse=function(t){return t&&typeof t=="object"?new e(t):t},e.prototype.path=void 0,e.prototype.wasRemoved=void 0,e.prototype.stat=void 0,e}(),a=function(){function e(e,t){this.url=e.url,this.expiresAt=new Date(Date.parse(e.expires)),t===!0?this.isDirect=!0:t===!1?this.isDirect=!1:this.isDirect=Date.now()-this.expiresAt<=864e5,this.isPreview=!this.isDirect}return e.parse=function(t,n){return t&&typeof t=="object"?new e(t,n):t},e.prototype.url=void 0,e.prototype.expiresAt=void 0,e.prototype.isDirect=void 0,e.prototype.isPreview=void 0,e}(),i=function(){function e(e){typeof e=="object"?(this.tag=e.copy_ref,this.expiresAt=new Date(Date.parse(e.expires))):(this.tag=e,this.expiresAt=new Date)}return e.parse=function(t){return!t||typeof t!="object"&&typeof t!="string"?t:new e(t)},e.prototype.tag=void 0,e.prototype.expiresAt=void 0,e}(),h=function(){function e(e){var t,n,r,i;this.path=e.path,this.path.substring(0,1)!=="/"&&(this.path="/"+this.path),t=this.path.length-1,t>=0&&this.path.substring(t)==="/"&&(this.path=this.path.substring(0,t)),n=this.path.lastIndexOf("/"),this.name=this.path.substring(n+1),this.isFolder=e.is_dir||!1,this.isFile=!this.isFolder,this.isRemoved=e.is_deleted||!1,this.typeIcon=e.icon,((r=e.modified)!=null?r.length:void 0)?this.modifiedAt=new Date(Date.parse(e.modified)):this.modifiedAt=null,((i=e.client_mtime)!=null?i.length:void 0)?this.clientModifiedAt=new Date(Date.parse(e.client_mtime)):this.clientModifiedAt=null;switch(e.root){case"dropbox":this.inAppFolder=!1;break;case"app_folder":this.inAppFolder=!0;break;default:this.inAppFolder=null}this.size=e.bytes||0,this.humanSize=e.size||"",this.hasThumbnail=e.thumb_exists||!1,this.isFolder?(this.versionTag=e.hash,this.mimeType=e.mime_type||"inode/directory"):(this.versionTag=e.rev,this.mimeType=e.mime_type||"application/octet-stream")}return e.parse=function(t){return t&&typeof t=="object"?new e(t):t},e.prototype.path=null,e.prototype.name=null,e.prototype.inAppFolder=null,e.prototype.isFolder=null,e.prototype.isFile=null,e.prototype.isRemoved=null,e.prototype.typeIcon=null,e.prototype.versionTag=null,e.prototype.mimeType=null,e.prototype.size=null,e.prototype.humanSize=null,e.prototype.hasThumbnail=null,e.prototype.modifiedAt=null,e.prototype.clientModifiedAt=null,e}(),p=function(){function e(e){var t;this.name=e.display_name,this.email=e.email,this.countryCode=e.country||null,this.uid=e.uid.toString(),e.public_app_url?(this.publicAppUrl=e.public_app_url,t=this.publicAppUrl.length-1,t>=0&&this.publicAppUrl.substring(t)==="/"&&(this.publicAppUrl=this.publicAppUrl.substring(0,t))):this.publicAppUrl=null,this.referralUrl=e.referral_link,this.quota=e.quota_info.quota,this.privateBytes=e.quota_info.normal||0,this.sharedBytes=e.quota_info.shared||0,this.usedQuota=this.privateBytes+this.sharedBytes}return e.parse=function(t){return t&&typeof t=="object"?new e(t):t},e.prototype.name=null,e.prototype.email=null,e.prototype.countryCode=null,e.prototype.uid=null,e.prototype.referralUrl=null,e.prototype.publicAppUrl=null,e.prototype.quota=null,e.prototype.usedQuota=null,e.prototype.privateBytes=null,e.prototype.sharedBytes=null,e}(),typeof window!="undefined"&&window!==null?!window.XDomainRequest||"withCredentials"in new XMLHttpRequest?(g=window.XMLHttpRequest,m=!1,v=window.navigator.userAgent.indexOf("Firefox")===-1):(g=window.XDomainRequest,m=!0,v=!1):(g=require("xmlhttprequest").XMLHttpRequest,m=!1,v=!1),d=function(){function e(){}return e.Request=g,e.ieMode=m,e.canSendForms=v,e.request=function(e,t,n,r,i){return this.request2(e,t,n,r,null,null,i)},e.request2=function(t,n,r,i,s,o,u){var a,f,l;return f=t==="GET"||s!=null||this.ieMode,f&&(l=e.urlEncode(r),l.length!==0&&(n=[n,"?",e.urlEncode(r)].join(""))),a={},i&&(a.Authorization=i),s!=null?typeof s=="string"&&(a["Content-Type"]="text/plain; charset=utf8"):f||(a["Content-Type"]="application/x-www-form-urlencoded",s=e.urlEncode(r)),e.xhrRequest(t,n,a,s,o,u)},e.multipartRequest=function(t,n,r,i,s){var o,u,a,f,l,c;return t=[t,"?",e.urlEncode(r)].join(""),a=n.value,c=typeof a=="object"&&(typeof Blob!="undefined"&&Blob!==null&&n.value instanceof Blob||typeof File!="undefined"&&File!==null&&n.value instanceof File),c?(l={},o=new FormData,o.append(n.name,a,n.fileName)):(f=n.contentType||"application/octet-stream",u=this.multipartBoundary(),l={"Content-Type":"multipart/form-data; boundary="+u},o=["--",u,"\r\n",'Content-Disposition: form-data; name="',n.name,'"; filename="',n.fileName,'"\r\n',"Content-Type: ",f,"\r\n","Content-Transfer-Encoding: binary\r\n\r\n",a,"\r\n","--",u,"--","\r\n"].join("")),i&&(l.Authorization=i),e.xhrRequest("POST",t,l,o,null,s)},e.multipartBoundary=function(){return[Date.now().toString(36),Math.random().toString(36)].join("----")},e.xhrRequest=function(t,n,r,i,s,o){var u,a,f;f=new this.Request,this.ieMode?(f.onload=function(){return e.onLoad(f,t,n,o)},f.onerror=function(){return e.onError(f,t,n,o)}):f.onreadystatechange=function(){return e.onReadyStateChange(f,t,n,s,o)},f.open(t,n,!0),s&&(s==="b"?f.overrideMimeType&&f.overrideMimeType("text/plain; charset=x-user-defined"):f.responseType=s);if(!this.ieMode)for(u in r){if(!M.call(r,u))continue;a=r[u],f.setRequestHeader(u,a)}return i!=null?f.send(i):f.send(),f},e.urlEncode=function(e){var t,n,r;t=[];for(n in e)r=e[n],t.push(this.urlEncodeValue(n)+"="+this.urlEncodeValue(r));return t.sort().join("&")},e.urlEncodeValue=function(e){return encodeURIComponent(e.toString()).replace(/\!/g,"%21").replace(/'/g,"%27").replace(/\(/g,"%28").replace(/\)/g,"%29").replace(/\*/g,"%2A")},e.urlDecode=function(e){var t,n,r,i,s,o;n={},o=e.split("&");for(i=0,s=o.length;i<s;i++)r=o[i],t=r.split("="),n[decodeURIComponent(t[0])]=decodeURIComponent(t[1]);return n},e.onReadyStateChange=function(n,r,i,s,o){var u,a,f,l,c,h,p,d,v;if(n.readyState!==4)return!0;if(n.status<200||n.status>=300)return u=new t(n,r,i),o(u),!0;h=n.getResponseHeader("x-dropbox-metadata");if(h!=null?h.length:void 0)try{c=JSON.parse(h)}catch(m){c=void 0}else c=void 0;if(s){if(s==="b"){f=n.responseText!=null?n.responseText:n.response,a=[];for(l=d=0,v=f.length;0<=v?d<v:d>v;l=0<=v?++d:--d)a.push(String.fromCharCode(f.charCodeAt(l)&255));p=a.join(""),o(null,p,c)}else o(null,n.response,c);return!0}p=n.responseText!=null?n.responseText:n.response;switch(n.getResponseHeader("Content-Type")){case"application/x-www-form-urlencoded":o(null,e.urlDecode(p),c);break;case"application/json":case"text/javascript":o(null,JSON.parse(p),c);break;default:o(null,p,c)}return!0},e.onLoad=function(t,n,r,i){var s;s=t.responseText;switch(t.contentType){case"application/x-www-form-urlencoded":i(null,e.urlDecode(s),void 0);break;case"application/json":case"text/javascript":i(null,JSON.parse(s),void 0);break;default:i(null,s,void 0)}return!0},e.onError=function(e,n,r,i){var s;return s=new t(e,n,r),i(s),!0},e}();if((typeof module!=="undefined"&&module!==null?module.exports:void 0)!=null)module.exports=e;else{if(typeof window=="undefined"||window===null)throw new Error("This library only supports node.js and modern browsers.");window.Dropbox=e}e.ApiError=t,e.Client=r,e.CopyReference=i,e.Drivers={Popup:u,Redirect:c,NodeServer:s},e.Oauth=o,e.PublicUrl=a,e.PulledChanges=l,e.PullChange=f,e.Stat=h,e.UserInfo=p,e.Xhr=d,e.atob=w,e.btoa=x,e.hmac=E,e.sha1=S,e.encodeKey=N}).call(this);
+// Generated by CoffeeScript 1.3.3
+(function() {
+  var Dropbox, DropboxApiError, DropboxAuthDriver, DropboxClient, DropboxCopyReference, DropboxNodeServerDriver, DropboxOauth, DropboxPopupDriver, DropboxPublicUrl, DropboxPullChange, DropboxPulledChanges, DropboxRedirectDriver, DropboxStat, DropboxUserInfo, DropboxXhr, DropboxXhrCanSendForms, DropboxXhrIeMode, DropboxXhrRequest, add32, arrayToBase64, atob, atobNibble, base64Digits, base64HmacSha1, base64Sha1, btoa, btoaNibble, crypto, dropboxEncodeKey, hmacSha1, rotateLeft32, sha1, stringToArray, _base64Digits,
+    __hasProp = {}.hasOwnProperty;
+
+  DropboxApiError = (function() {
+
+    function DropboxApiError(xhr, method, url) {
+      var text;
+      this.method = method;
+      this.url = url;
+      this.status = xhr.status;
+      if (xhr.responseType) {
+        text = xhr.response || xhr.responseText;
+      } else {
+        text = xhr.responseText;
+      }
+      if (text) {
+        try {
+          this.responseText = text.toString();
+          this.response = JSON.parse(text);
+        } catch (e) {
+          this.response = null;
+        }
+      } else {
+        this.responseText = '(no response)';
+        this.response = null;
+      }
+    }
+
+    DropboxApiError.prototype.toString = function() {
+      return "Dropbox API error " + this.status + " from " + this.method + " " + this.url + " :: " + this.responseText;
+    };
+
+    DropboxApiError.prototype.inspect = function() {
+      return this.toString();
+    };
+
+    return DropboxApiError;
+
+  })();
+
+  if (typeof window !== "undefined" && window !== null) {
+    if (window.atob && window.btoa) {
+      atob = function(string) {
+        return window.atob(string);
+      };
+      btoa = function(base64) {
+        return window.btoa(base64);
+      };
+    } else {
+      base64Digits = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+      btoaNibble = function(accumulator, bytes, result) {
+        var i, limit;
+        limit = 3 - bytes;
+        accumulator <<= limit * 8;
+        i = 3;
+        while (i >= limit) {
+          result.push(base64Digits.charAt((accumulator >> (i * 6)) & 0x3F));
+          i -= 1;
+        }
+        i = bytes;
+        while (i < 3) {
+          result.push('=');
+          i += 1;
+        }
+        return null;
+      };
+      atobNibble = function(accumulator, digits, result) {
+        var i, limit;
+        limit = 4 - digits;
+        accumulator <<= limit * 6;
+        i = 2;
+        while (i >= limit) {
+          result.push(String.fromCharCode((accumulator >> (8 * i)) & 0xFF));
+          i -= 1;
+        }
+        return null;
+      };
+      btoa = function(string) {
+        var accumulator, bytes, i, result, _i, _ref;
+        result = [];
+        accumulator = 0;
+        bytes = 0;
+        for (i = _i = 0, _ref = string.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+          accumulator = (accumulator << 8) | string.charCodeAt(i);
+          bytes += 1;
+          if (bytes === 3) {
+            btoaNibble(accumulator, bytes, result);
+            accumulator = bytes = 0;
+          }
+        }
+        if (bytes > 0) {
+          btoaNibble(accumulator, bytes, result);
+        }
+        return result.join('');
+      };
+      atob = function(base64) {
+        var accumulator, digit, digits, i, result, _i, _ref;
+        result = [];
+        accumulator = 0;
+        digits = 0;
+        for (i = _i = 0, _ref = base64.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+          digit = base64.charAt(i);
+          if (digit === '=') {
+            break;
+          }
+          accumulator = (accumulator << 6) | base64Digits.indexOf(digit);
+          digits += 1;
+          if (digits === 4) {
+            atobNibble(accumulator, digits, result);
+            accumulator = digits = 0;
+          }
+        }
+        if (digits > 0) {
+          atobNibble(accumulator, digits, result);
+        }
+        return result.join('');
+      };
+    }
+  } else {
+    atob = function(arg) {
+      var buffer, i;
+      buffer = new Buffer(arg, 'base64');
+      return ((function() {
+        var _i, _ref, _results;
+        _results = [];
+        for (i = _i = 0, _ref = buffer.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+          _results.push(String.fromCharCode(buffer[i]));
+        }
+        return _results;
+      })()).join('');
+    };
+    btoa = function(arg) {
+      var buffer, i;
+      buffer = new Buffer((function() {
+        var _i, _ref, _results;
+        _results = [];
+        for (i = _i = 0, _ref = arg.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+          _results.push(arg.charCodeAt(i));
+        }
+        return _results;
+      })());
+      return buffer.toString('base64');
+    };
+  }
+
+  DropboxClient = (function() {
+
+    function DropboxClient(options) {
+      this.sandbox = options.sandbox || false;
+      this.apiServer = options.server || this.defaultApiServer();
+      this.authServer = options.authServer || this.defaultAuthServer();
+      this.fileServer = options.fileServer || this.defaultFileServer();
+      this.oauth = new DropboxOauth(options);
+      this.uid = null;
+      this.authState = null;
+      this.authError = null;
+      this._credentials = null;
+      this.setCredentials(options);
+      this.setupUrls();
+    }
+
+    DropboxClient.prototype.authDriver = function(driver) {
+      this.authDriver = driver;
+      return this;
+    };
+
+    DropboxClient.prototype.dropboxUid = function() {
+      return this.uid;
+    };
+
+    DropboxClient.prototype.credentials = function(newCredentials) {
+      if (!this._credentials) {
+        this.computeCredentials();
+      }
+      return this._credentials;
+    };
+
+    DropboxClient.prototype.authenticate = function(callback) {
+      var oldAuthState, _fsmStep,
+        _this = this;
+      oldAuthState = null;
+      _fsmStep = function() {
+        var authUrl;
+        if (oldAuthState !== _this.authState) {
+          oldAuthState = _this.authState;
+          if (_this.authDriver.onAuthStateChange) {
+            return _this.authDriver.onAuthStateChange(_this, _fsmStep);
+          }
+        }
+        switch (_this.authState) {
+          case DropboxClient.RESET:
+            return _this.requestToken(function(error, data) {
+              var token, tokenSecret;
+              if (error) {
+                _this.authError = error;
+                _this.authState = DropboxClient.ERROR;
+              } else {
+                token = data.oauth_token;
+                tokenSecret = data.oauth_token_secret;
+                _this.oauth.setToken(token, tokenSecret);
+                _this.authState = DropboxClient.REQUEST;
+              }
+              _this._credentials = null;
+              return _fsmStep();
+            });
+          case DropboxClient.REQUEST:
+            authUrl = _this.authorizeUrl(_this.oauth.token);
+            return _this.authDriver.doAuthorize(authUrl, _this.oauth.token, _this.oauth.tokenSecret, function() {
+              _this.authState = DropboxClient.AUTHORIZED;
+              _this._credentials = null;
+              return _fsmStep();
+            });
+          case DropboxClient.AUTHORIZED:
+            return _this.getAccessToken(function(error, data) {
+              if (error) {
+                _this.authError = error;
+                _this.authState = DropboxClient.ERROR;
+              } else {
+                _this.oauth.setToken(data.oauth_token, data.oauth_token_secret);
+                _this.uid = data.uid;
+                _this.authState = DropboxClient.DONE;
+              }
+              _this._credentials = null;
+              return _fsmStep();
+            });
+          case DropboxClient.DONE:
+            return callback(null, _this);
+          case Dropbox.SIGNED_OFF:
+            _this.reset();
+            return _fsmStep();
+          case DropboxClient.ERROR:
+            return callback(_this.authError);
+        }
+      };
+      _fsmStep();
+      return this;
+    };
+
+    DropboxClient.prototype.signOut = function(callback) {
+      var params, url,
+        _this = this;
+      url = this.urls.signOut;
+      params = this.oauth.addAuthParams('POST', url, {});
+      return DropboxXhr.request('POST', url, params, null, function(error) {
+        if (error) {
+          return callback(error);
+        }
+        _this.reset();
+        _this.authState = DropboxClient.SIGNED_OFF;
+        if (_this.authDriver.onAuthStateChange) {
+          return _this.authDriver.onAuthStateChange(_this, function() {
+            return callback(error);
+          });
+        } else {
+          return callback(error);
+        }
+      });
+    };
+
+    DropboxClient.prototype.signOff = function(callback) {
+      return this.signOut(callback);
+    };
+
+    DropboxClient.prototype.getUserInfo = function(callback) {
+      var params, url;
+      url = this.urls.accountInfo;
+      params = this.oauth.addAuthParams('GET', url, {});
+      return DropboxXhr.request('GET', url, params, null, function(error, userData) {
+        return callback(error, DropboxUserInfo.parse(userData), userData);
+      });
+    };
+
+    DropboxClient.prototype.readFile = function(path, options, callback) {
+      var params, responseType, url;
+      if ((!callback) && (typeof options === 'function')) {
+        callback = options;
+        options = null;
+      }
+      url = "" + this.urls.getFile + "/" + (this.urlEncodePath(path));
+      params = {};
+      responseType = null;
+      if (options) {
+        if (options.versionTag) {
+          params.rev = options.versionTag;
+        } else if (options.rev) {
+          params.rev = options.rev;
+        }
+        if (options.blob) {
+          responseType = 'blob';
+        }
+        if (options.binary) {
+          responseType = 'b';
+        }
+      }
+      this.oauth.addAuthParams('GET', url, params);
+      return DropboxXhr.request2('GET', url, params, null, null, responseType, function(error, data, metadata) {
+        return callback(error, data, DropboxStat.parse(metadata));
+      });
+    };
+
+    DropboxClient.prototype.writeFile = function(path, data, options, callback) {
+      var useForm;
+      if ((!callback) && (typeof options === 'function')) {
+        callback = options;
+        options = null;
+      }
+      useForm = DropboxXhr.canSendForms && typeof data === 'object';
+      if (useForm) {
+        return this.writeFileUsingForm(path, data, options, callback);
+      } else {
+        return this.writeFileUsingPut(path, data, options, callback);
+      }
+    };
+
+    DropboxClient.prototype.writeFileUsingForm = function(path, data, options, callback) {
+      var fileField, fileName, params, slashIndex, url;
+      slashIndex = path.lastIndexOf('/');
+      if (slashIndex === -1) {
+        fileName = path;
+        path = '';
+      } else {
+        fileName = path.substring(slashIndex);
+        path = path.substring(0, slashIndex);
+      }
+      url = "" + this.urls.postFile + "/" + (this.urlEncodePath(path));
+      params = {
+        file: fileName
+      };
+      if (options) {
+        if (options.noOverwrite) {
+          params.overwrite = 'false';
+        }
+        if (options.lastVersionTag) {
+          params.parent_rev = options.lastVersionTag;
+        } else if (options.parentRev || options.parent_rev) {
+          params.parent_rev = options.parentRev || options.parent_rev;
+        }
+      }
+      this.oauth.addAuthParams('POST', url, params);
+      delete params.file;
+      fileField = {
+        name: 'file',
+        value: data,
+        fileName: fileName,
+        contentType: 'application/octet-stream'
+      };
+      return DropboxXhr.multipartRequest(url, fileField, params, null, function(error, metadata) {
+        return callback(error, DropboxStat.parse(metadata));
+      });
+    };
+
+    DropboxClient.prototype.writeFileUsingPut = function(path, data, options, callback) {
+      var params, url;
+      url = "" + this.urls.putFile + "/" + (this.urlEncodePath(path));
+      params = {};
+      if (options) {
+        if (options.noOverwrite) {
+          params.overwrite = 'false';
+        }
+        if (options.lastVersionTag) {
+          params.parent_rev = options.lastVersionTag;
+        } else if (options.parentRev || options.parent_rev) {
+          params.parent_rev = options.parentRev || options.parent_rev;
+        }
+      }
+      this.oauth.addAuthParams('POST', url, params);
+      return DropboxXhr.request2('POST', url, params, null, data, null, function(error, metadata) {
+        return callback(error, DropboxStat.parse(metadata));
+      });
+    };
+
+    DropboxClient.prototype.stat = function(path, options, callback) {
+      var params, url;
+      if ((!callback) && (typeof options === 'function')) {
+        callback = options;
+        options = null;
+      }
+      url = "" + this.urls.metadata + "/" + (this.urlEncodePath(path));
+      params = {};
+      if (options) {
+        if (options.version != null) {
+          params.rev = options.version;
+        }
+        if (options.removed || options.deleted) {
+          params.include_deleted = 'true';
+        }
+        if (options.readDir) {
+          params.list = 'true';
+          if (options.readDir !== true) {
+            params.file_limit = options.readDir.toString();
+          }
+        }
+        if (options.cacheHash) {
+          params.hash = options.cacheHash;
+        }
+      }
+      params.include_deleted || (params.include_deleted = 'false');
+      params.list || (params.list = 'false');
+      this.oauth.addAuthParams('GET', url, params);
+      return DropboxXhr.request('GET', url, params, null, function(error, metadata) {
+        var entries, entry, stat;
+        stat = DropboxStat.parse(metadata);
+        if (metadata != null ? metadata.contents : void 0) {
+          entries = (function() {
+            var _i, _len, _ref, _results;
+            _ref = metadata.contents;
+            _results = [];
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              entry = _ref[_i];
+              _results.push(DropboxStat.parse(entry));
+            }
+            return _results;
+          })();
+        } else {
+          entries = void 0;
+        }
+        return callback(error, stat, entries);
+      });
+    };
+
+    DropboxClient.prototype.readdir = function(path, options, callback) {
+      var statOptions;
+      if ((!callback) && (typeof options === 'function')) {
+        callback = options;
+        options = null;
+      }
+      statOptions = {
+        readDir: true
+      };
+      if (options) {
+        if (options.limit != null) {
+          statOptions.readDir = options.limit;
+        }
+        if (options.versionTag) {
+          statOptions.versionTag = options.versionTag;
+        }
+      }
+      return this.stat(path, statOptions, function(error, stat, entry_stats) {
+        var entries, entry_stat;
+        if (entry_stats) {
+          entries = (function() {
+            var _i, _len, _results;
+            _results = [];
+            for (_i = 0, _len = entry_stats.length; _i < _len; _i++) {
+              entry_stat = entry_stats[_i];
+              _results.push(entry_stat.name);
+            }
+            return _results;
+          })();
+        } else {
+          entries = null;
+        }
+        return callback(error, entries, stat, entry_stats);
+      });
+    };
+
+    DropboxClient.prototype.metadata = function(path, options, callback) {
+      return this.stat(path, options, callback);
+    };
+
+    DropboxClient.prototype.makeUrl = function(path, options, callback) {
+      var isDirect, params, url;
+      if ((!callback) && (typeof options === 'function')) {
+        callback = options;
+        options = null;
+      }
+      path = this.urlEncodePath(path);
+      if (options && options.download) {
+        isDirect = true;
+        url = "" + this.urls.media + "/" + path;
+      } else {
+        isDirect = false;
+        url = "" + this.urls.shares + "/" + path;
+      }
+      if (options && options.long) {
+        params = {
+          short_url: 'false'
+        };
+      } else {
+        params = {};
+      }
+      this.oauth.addAuthParams('POST', url, params);
+      return DropboxXhr.request('POST', url, params, null, function(error, urlData) {
+        return callback(error, DropboxPublicUrl.parse(urlData, isDirect));
+      });
+    };
+
+    DropboxClient.prototype.history = function(path, options, callback) {
+      var params, url;
+      if ((!callback) && (typeof options === 'function')) {
+        callback = options;
+        options = null;
+      }
+      url = "" + this.urls.revisions + "/" + (this.urlEncodePath(path));
+      params = {};
+      if (options && (options.limit != null)) {
+        params.rev_limit = options.limit;
+      }
+      this.oauth.addAuthParams('GET', url, params);
+      return DropboxXhr.request('GET', url, params, null, function(error, versions) {
+        var metadata, stats;
+        if (versions) {
+          stats = (function() {
+            var _i, _len, _results;
+            _results = [];
+            for (_i = 0, _len = versions.length; _i < _len; _i++) {
+              metadata = versions[_i];
+              _results.push(DropboxStat.parse(metadata));
+            }
+            return _results;
+          })();
+        } else {
+          stats = void 0;
+        }
+        return callback(error, stats);
+      });
+    };
+
+    DropboxClient.prototype.revisions = function(path, options, callback) {
+      return this.history(path, options, callback);
+    };
+
+    DropboxClient.prototype.thumbnailUrl = function(path, options) {
+      var params, url;
+      url = "" + this.urls.thumbnails + "/" + (this.urlEncodePath(path));
+      params = {};
+      if (options) {
+        if (options.format) {
+          params.format = options.format;
+        } else if (options.png) {
+          params.format = 'png';
+        }
+        if (options.size) {
+          params.size = options.size;
+        }
+      }
+      this.oauth.addAuthParams('GET', url, params);
+      return "" + url + "?" + (Dropbox.Xhr.urlEncode(params));
+    };
+
+    DropboxClient.prototype.readThumbnail = function(path, options, callback) {
+      var responseType, url;
+      if ((!callback) && (typeof options === 'function')) {
+        callback = options;
+        options = null;
+      }
+      url = this.thumbnailUrl(path, options);
+      responseType = 'b';
+      if (options) {
+        if (options.blob) {
+          responseType = 'blob';
+        }
+      }
+      return DropboxXhr.request2('GET', url, {}, null, null, responseType, function(error, data, metadata) {
+        return callback(error, data, DropboxStat.parse(metadata));
+      });
+    };
+
+    DropboxClient.prototype.revertFile = function(path, versionTag, callback) {
+      var params, url;
+      url = "" + this.urls.restore + "/" + (this.urlEncodePath(path));
+      params = {
+        rev: versionTag
+      };
+      this.oauth.addAuthParams('POST', url, params);
+      return DropboxXhr.request('POST', url, params, null, function(error, metadata) {
+        return callback(error, DropboxStat.parse(metadata));
+      });
+    };
+
+    DropboxClient.prototype.restore = function(path, versionTag, callback) {
+      return this.revertFile(path, versionTag, callback);
+    };
+
+    DropboxClient.prototype.findByName = function(path, namePattern, options, callback) {
+      var params, url;
+      if ((!callback) && (typeof options === 'function')) {
+        callback = options;
+        options = null;
+      }
+      url = "" + this.urls.search + "/" + (this.urlEncodePath(path));
+      params = {
+        query: namePattern
+      };
+      if (options) {
+        if (options.limit != null) {
+          params.file_limit = options.limit;
+        }
+        if (options.removed || options.deleted) {
+          params.include_deleted = true;
+        }
+      }
+      this.oauth.addAuthParams('GET', url, params);
+      return DropboxXhr.request('GET', url, params, null, function(error, results) {
+        var metadata, stats;
+        if (results) {
+          stats = (function() {
+            var _i, _len, _results;
+            _results = [];
+            for (_i = 0, _len = results.length; _i < _len; _i++) {
+              metadata = results[_i];
+              _results.push(DropboxStat.parse(metadata));
+            }
+            return _results;
+          })();
+        } else {
+          stats = void 0;
+        }
+        return callback(error, stats);
+      });
+    };
+
+    DropboxClient.prototype.search = function(path, namePattern, options, callback) {
+      return this.findByName(path, namePattern, options, callback);
+    };
+
+    DropboxClient.prototype.makeCopyReference = function(path, callback) {
+      var params, url;
+      url = "" + this.urls.copyRef + "/" + (this.urlEncodePath(path));
+      params = this.oauth.addAuthParams('GET', url, {});
+      return DropboxXhr.request('GET', url, params, null, function(error, refData) {
+        return callback(error, DropboxCopyReference.parse(refData));
+      });
+    };
+
+    DropboxClient.prototype.copyRef = function(path, callback) {
+      return this.makeCopyReference(path, callback);
+    };
+
+    DropboxClient.prototype.pullChanges = function(cursor, callback) {
+      var params, url;
+      if ((!callback) && (typeof cursor === 'function')) {
+        callback = cursor;
+        cursor = null;
+      }
+      url = this.urls.delta;
+      params = {};
+      if (cursor) {
+        if (cursor.cursorTag) {
+          params = {
+            cursor: cursor.cursorTag
+          };
+        } else {
+          params = {
+            cursor: cursor
+          };
+        }
+      } else {
+        params = {};
+      }
+      this.oauth.addAuthParams('POST', url, params);
+      return DropboxXhr.request('POST', url, params, null, function(error, deltaInfo) {
+        return callback(error, Dropbox.PulledChanges.parse(deltaInfo));
+      });
+    };
+
+    DropboxClient.prototype.delta = function(cursor, callback) {
+      return this.pullChanges(cursor, callback);
+    };
+
+    DropboxClient.prototype.mkdir = function(path, callback) {
+      var params, url;
+      url = this.urls.fileopsCreateFolder;
+      params = {
+        root: this.fileRoot,
+        path: this.normalizePath(path)
+      };
+      this.oauth.addAuthParams('POST', url, params);
+      return DropboxXhr.request('POST', url, params, null, function(error, metadata) {
+        return callback(error, DropboxStat.parse(metadata));
+      });
+    };
+
+    DropboxClient.prototype.remove = function(path, callback) {
+      var params, url;
+      url = this.urls.fileopsDelete;
+      params = {
+        root: this.fileRoot,
+        path: this.normalizePath(path)
+      };
+      this.oauth.addAuthParams('POST', url, params);
+      return DropboxXhr.request('POST', url, params, null, function(error, metadata) {
+        return callback(error, DropboxStat.parse(metadata));
+      });
+    };
+
+    DropboxClient.prototype.unlink = function(path, callback) {
+      return this.remove(path, callback);
+    };
+
+    DropboxClient.prototype["delete"] = function(path, callback) {
+      return this.remove(path, callback);
+    };
+
+    DropboxClient.prototype.copy = function(from, toPath, callback) {
+      var options, params, url;
+      if ((!callback) && (typeof options === 'function')) {
+        callback = options;
+        options = null;
+      }
+      params = {
+        root: this.fileRoot,
+        to_path: this.normalizePath(toPath)
+      };
+      if (from instanceof DropboxCopyReference) {
+        params.from_copy_ref = from.tag;
+      } else {
+        params.from_path = this.normalizePath(from);
+      }
+      url = this.urls.fileopsCopy;
+      this.oauth.addAuthParams('POST', url, params);
+      return DropboxXhr.request('POST', url, params, null, function(error, metadata) {
+        return callback(error, DropboxStat.parse(metadata));
+      });
+    };
+
+    DropboxClient.prototype.move = function(fromPath, toPath, callback) {
+      var options, params, url;
+      if ((!callback) && (typeof options === 'function')) {
+        callback = options;
+        options = null;
+      }
+      fromPath = this.normalizePath(fromPath);
+      toPath = this.normalizePath(toPath);
+      url = this.urls.fileopsMove;
+      params = {
+        root: this.fileRoot,
+        from_path: fromPath,
+        to_path: toPath
+      };
+      this.oauth.addAuthParams('POST', url, params);
+      return DropboxXhr.request('POST', url, params, null, function(error, metadata) {
+        return callback(error, DropboxStat.parse(metadata));
+      });
+    };
+
+    DropboxClient.prototype.reset = function() {
+      this.uid = null;
+      this.oauth.setToken(null, '');
+      this.authState = DropboxClient.RESET;
+      this.authError = null;
+      this._credentials = null;
+      return this;
+    };
+
+    DropboxClient.prototype.setCredentials = function(credentials) {
+      this.oauth.reset(credentials);
+      this.uid = credentials.uid || null;
+      if (credentials.authState) {
+        this.authState = credentials.authState;
+      } else {
+        if (credentials.token) {
+          this.authState = DropboxClient.DONE;
+        } else {
+          this.authState = DropboxClient.RESET;
+        }
+      }
+      this.authError = null;
+      this._credentials = null;
+      return this;
+    };
+
+    DropboxClient.prototype.appHash = function() {
+      return this.oauth.appHash();
+    };
+
+    DropboxClient.prototype.setupUrls = function() {
+      this.fileRoot = this.sandbox ? 'sandbox' : 'dropbox';
+      return this.urls = {
+        requestToken: "" + this.apiServer + "/1/oauth/request_token",
+        authorize: "" + this.authServer + "/1/oauth/authorize",
+        accessToken: "" + this.apiServer + "/1/oauth/access_token",
+        signOut: "" + this.apiServer + "/1/unlink_access_token",
+        accountInfo: "" + this.apiServer + "/1/account/info",
+        getFile: "" + this.fileServer + "/1/files/" + this.fileRoot,
+        postFile: "" + this.fileServer + "/1/files/" + this.fileRoot,
+        putFile: "" + this.fileServer + "/1/files_put/" + this.fileRoot,
+        metadata: "" + this.apiServer + "/1/metadata/" + this.fileRoot,
+        delta: "" + this.apiServer + "/1/delta",
+        revisions: "" + this.apiServer + "/1/revisions/" + this.fileRoot,
+        restore: "" + this.apiServer + "/1/restore/" + this.fileRoot,
+        search: "" + this.apiServer + "/1/search/" + this.fileRoot,
+        shares: "" + this.apiServer + "/1/shares/" + this.fileRoot,
+        media: "" + this.apiServer + "/1/media/" + this.fileRoot,
+        copyRef: "" + this.apiServer + "/1/copy_ref/" + this.fileRoot,
+        thumbnails: "" + this.fileServer + "/1/thumbnails/" + this.fileRoot,
+        fileopsCopy: "" + this.apiServer + "/1/fileops/copy",
+        fileopsCreateFolder: "" + this.apiServer + "/1/fileops/create_folder",
+        fileopsDelete: "" + this.apiServer + "/1/fileops/delete",
+        fileopsMove: "" + this.apiServer + "/1/fileops/move"
+      };
+    };
+
+    DropboxClient.ERROR = 0;
+
+    DropboxClient.RESET = 1;
+
+    DropboxClient.REQUEST = 2;
+
+    DropboxClient.AUTHORIZED = 3;
+
+    DropboxClient.DONE = 4;
+
+    DropboxClient.SIGNED_OFF = 5;
+
+    DropboxClient.prototype.urlEncodePath = function(path) {
+      return DropboxXhr.urlEncodeValue(this.normalizePath(path)).replace(/%2F/gi, '/');
+    };
+
+    DropboxClient.prototype.normalizePath = function(path) {
+      var i;
+      if (path.substring(0, 1) === '/') {
+        i = 1;
+        while (path.substring(i, i + 1) === '/') {
+          i += 1;
+        }
+        return path.substring(i);
+      } else {
+        return path;
+      }
+    };
+
+    DropboxClient.prototype.requestToken = function(callback) {
+      var params;
+      params = this.oauth.addAuthParams('POST', this.urls.requestToken, {});
+      return DropboxXhr.request('POST', this.urls.requestToken, params, null, callback);
+    };
+
+    DropboxClient.prototype.authorizeUrl = function(token) {
+      var params;
+      params = {
+        oauth_token: token,
+        oauth_callback: this.authDriver.url()
+      };
+      return ("" + this.urls.authorize + "?") + DropboxXhr.urlEncode(params);
+    };
+
+    DropboxClient.prototype.getAccessToken = function(callback) {
+      var params;
+      params = this.oauth.addAuthParams('POST', this.urls.accessToken, {});
+      return DropboxXhr.request('POST', this.urls.accessToken, params, null, callback);
+    };
+
+    DropboxClient.prototype.defaultApiServer = function() {
+      return 'https://api.dropbox.com';
+    };
+
+    DropboxClient.prototype.defaultAuthServer = function() {
+      return this.apiServer.replace('api.', 'www.');
+    };
+
+    DropboxClient.prototype.defaultFileServer = function() {
+      return this.apiServer.replace('api.', 'api-content.');
+    };
+
+    DropboxClient.prototype.computeCredentials = function() {
+      var value;
+      value = {
+        key: this.oauth.key,
+        sandbox: this.sandbox
+      };
+      if (this.oauth.secret) {
+        value.secret = this.oauth.secret;
+      }
+      if (this.oauth.token) {
+        value.token = this.oauth.token;
+        value.tokenSecret = this.oauth.tokenSecret;
+      }
+      if (this.uid) {
+        value.uid = this.uid;
+      }
+      if (this.authState !== DropboxClient.ERROR && this.authState !== DropboxClient.RESET && this.authState !== DropboxClient.DONE && this.authState !== DropboxClient.SIGNED_OFF) {
+        value.authState = this.authState;
+      }
+      if (this.apiServer !== this.defaultApiServer()) {
+        value.server = this.apiServer;
+      }
+      if (this.authServer !== this.defaultAuthServer()) {
+        value.authServer = this.authServer;
+      }
+      if (this.fileServer !== this.defaultFileServer()) {
+        value.fileServer = this.fileServer;
+      }
+      return this._credentials = value;
+    };
+
+    return DropboxClient;
+
+  })();
+
+  DropboxAuthDriver = (function() {
+
+    function DropboxAuthDriver() {}
+
+    DropboxAuthDriver.prototype.url = function() {
+      return 'https://some.url';
+    };
+
+    DropboxAuthDriver.prototype.doAuthorize = function(authUrl, token, tokenSecret, callback) {
+      return callback('oauth-token');
+    };
+
+    DropboxAuthDriver.prototype.onAuthStateChange = function(client, done) {
+      return done();
+    };
+
+    return DropboxAuthDriver;
+
+  })();
+
+  DropboxRedirectDriver = (function() {
+
+    function DropboxRedirectDriver(options) {
+      this.rememberUser = (options != null ? options.rememberUser : void 0) || false;
+      this.scope = (options != null ? options.scope : void 0) || 'default';
+      this.useQuery = (options != null ? options.useQuery : void 0) || false;
+      this.receiverUrl = this.computeUrl(options);
+      this.tokenRe = new RegExp("(#|\\?|&)oauth_token=([^&#]+)(&|#|$)");
+    }
+
+    DropboxRedirectDriver.prototype.url = function() {
+      return this.receiverUrl;
+    };
+
+    DropboxRedirectDriver.prototype.doAuthorize = function(authUrl, token, tokenSecret, callback) {
+      return window.location.assign(authUrl);
+    };
+
+    DropboxRedirectDriver.prototype.onAuthStateChange = function(client, done) {
+      var credentials,
+        _this = this;
+      this.storageKey = "dropbox-auth:" + this.scope + ":" + (client.appHash());
+      switch (client.authState) {
+        case Dropbox.Client.RESET:
+          if (!(credentials = this.loadCredentials())) {
+            return done();
+          }
+          if (credentials.authState) {
+            if (credentials.token === this.locationToken()) {
+              if (credentials.authState === DropboxClient.REQUEST) {
+                this.forgetCredentials();
+                credentials.authState = DropboxClient.AUTHORIZED;
+              }
+              client.setCredentials(credentials);
+            }
+            return done();
+          }
+          if (!this.rememberUser) {
+            this.forgetCredentials();
+            return done();
+          }
+          client.setCredentials(credentials);
+          return client.getUserInfo(function(error, userInfo) {
+            if (error) {
+              client.reset();
+              _this.forgetCredentials();
+            }
+            return done();
+          });
+        case DropboxClient.REQUEST:
+          this.storeCredentials(client.credentials());
+          return done();
+        case DropboxClient.DONE:
+          if (this.rememberUser) {
+            this.storeCredentials(client.credentials());
+          }
+          return done();
+        case DropboxClient.SIGNED_OFF:
+          this.forgetCredentials();
+          return done();
+        case DropboxClient.ERROR:
+          this.forgetCredentials();
+          return done();
+        default:
+          return done();
+      }
+    };
+
+    DropboxRedirectDriver.prototype.computeUrl = function() {
+      var fragment, location, locationPair, querySuffix;
+      querySuffix = "_dropboxjs_scope=" + (encodeURIComponent(this.scope));
+      location = DropboxRedirectDriver.currentLocation();
+      if (location.indexOf('#') === -1) {
+        fragment = null;
+      } else {
+        locationPair = location.split('#', 2);
+        location = locationPair[0];
+        fragment = locationPair[1];
+      }
+      if (this.useQuery) {
+        if (location.indexOf('?') === -1) {
+          location += "?" + querySuffix;
+        } else {
+          location += "&" + querySuffix;
+        }
+      } else {
+        fragment = "?" + querySuffix;
+      }
+      if (fragment) {
+        return location + '#' + fragment;
+      } else {
+        return location;
+      }
+    };
+
+    DropboxRedirectDriver.prototype.locationToken = function() {
+      var location, match, scopePattern;
+      location = DropboxRedirectDriver.currentLocation();
+      scopePattern = "_dropboxjs_scope=" + (encodeURIComponent(this.scope)) + "&";
+      if ((typeof location.indexOf === "function" ? location.indexOf(scopePattern) : void 0) === -1) {
+        return null;
+      }
+      match = this.tokenRe.exec(location);
+      if (match) {
+        return decodeURIComponent(match[2]);
+      } else {
+        return null;
+      }
+    };
+
+    DropboxRedirectDriver.currentLocation = function() {
+      return window.location.href;
+    };
+
+    DropboxRedirectDriver.prototype.storeCredentials = function(credentials) {
+      return localStorage.setItem(this.storageKey, JSON.stringify(credentials));
+    };
+
+    DropboxRedirectDriver.prototype.loadCredentials = function() {
+      var jsonString;
+      jsonString = localStorage.getItem(this.storageKey);
+      if (!jsonString) {
+        return null;
+      }
+      try {
+        return JSON.parse(jsonString);
+      } catch (e) {
+        return null;
+      }
+    };
+
+    DropboxRedirectDriver.prototype.forgetCredentials = function() {
+      return localStorage.removeItem(this.storageKey);
+    };
+
+    return DropboxRedirectDriver;
+
+  })();
+
+  DropboxPopupDriver = (function() {
+
+    function DropboxPopupDriver(options) {
+      this.receiverUrl = this.computeUrl(options);
+      this.tokenRe = new RegExp("(#|\\?|&)oauth_token=([^&#]+)(&|#|$)");
+    }
+
+    DropboxPopupDriver.prototype.doAuthorize = function(authUrl, token, tokenSecret, callback) {
+      this.listenForMessage(token, callback);
+      return this.openWindow(authUrl);
+    };
+
+    DropboxPopupDriver.prototype.url = function() {
+      return this.receiverUrl;
+    };
+
+    DropboxPopupDriver.prototype.computeUrl = function(options) {
+      var fragments;
+      if (options) {
+        if (options.receiverUrl) {
+          if (options.noFragment || options.receiverUrl.indexOf('#') !== -1) {
+            return options.receiverUrl;
+          } else {
+            return options.receiverUrl + '#';
+          }
+        } else if (options.receiverFile) {
+          fragments = DropboxPopupDriver.currentLocation().split('/');
+          fragments[fragments.length - 1] = options.receiverFile;
+          if (options.noFragment) {
+            return fragments.join('/');
+          } else {
+            return fragments.join('/') + '#';
+          }
+        }
+      }
+      return DropboxPopupDriver.currentLocation();
+    };
+
+    DropboxPopupDriver.currentLocation = function() {
+      return window.location.href;
+    };
+
+    DropboxPopupDriver.prototype.openWindow = function(url) {
+      return window.open(url, '_dropboxOauthSigninWindow', this.popupWindowSpec(980, 980));
+    };
+
+    DropboxPopupDriver.prototype.popupWindowSpec = function(popupWidth, popupHeight) {
+      var height, popupLeft, popupTop, width, x0, y0, _ref, _ref1, _ref2, _ref3;
+      x0 = (_ref = window.screenX) != null ? _ref : window.screenLeft;
+      y0 = (_ref1 = window.screenY) != null ? _ref1 : window.screenTop;
+      width = (_ref2 = window.outerWidth) != null ? _ref2 : document.documentElement.clientWidth;
+      height = (_ref3 = window.outerHeight) != null ? _ref3 : document.documentElement.clientHeight;
+      popupLeft = Math.round(x0 + (width - popupWidth) / 2);
+      popupTop = Math.round(y0 + (height - popupHeight) / 2.5);
+      return ("width=" + popupWidth + ",height=" + popupHeight + ",") + ("left=" + popupLeft + ",top=" + popupTop) + 'dialog=yes,dependent=yes,scrollbars=yes,location=yes';
+    };
+
+    DropboxPopupDriver.prototype.listenForMessage = function(token, callback) {
+      var listener, tokenRe;
+      tokenRe = this.tokenRe;
+      listener = function(event) {
+        var match;
+        match = tokenRe.exec(event.data.toString());
+        if (match && decodeURIComponent(match[2]) === token) {
+          window.removeEventListener('message', listener);
+          return callback();
+        }
+      };
+      return window.addEventListener('message', listener, false);
+    };
+
+    return DropboxPopupDriver;
+
+  })();
+
+  DropboxNodeServerDriver = (function() {
+
+    function DropboxNodeServerDriver(options) {
+      this.port = (options != null ? options.port : void 0) || 8912;
+      this.faviconFile = (options != null ? options.favicon : void 0) || null;
+      this.fs = require('fs');
+      this.http = require('http');
+      this.open = require('open');
+      this.callbacks = {};
+      this.urlRe = new RegExp("^/oauth_callback\\?");
+      this.tokenRe = new RegExp("(\\?|&)oauth_token=([^&]+)(&|$)");
+      this.createApp();
+    }
+
+    DropboxNodeServerDriver.prototype.url = function() {
+      return "http://localhost:" + this.port + "/oauth_callback";
+    };
+
+    DropboxNodeServerDriver.prototype.doAuthorize = function(authUrl, token, tokenSecret, callback) {
+      this.callbacks[token] = callback;
+      return this.openBrowser(authUrl);
+    };
+
+    DropboxNodeServerDriver.prototype.openBrowser = function(url) {
+      if (!url.match(/^https?:\/\//)) {
+        throw new Error("Not a http/https URL: " + url);
+      }
+      return this.open(url);
+    };
+
+    DropboxNodeServerDriver.prototype.createApp = function() {
+      var _this = this;
+      this.app = this.http.createServer(function(request, response) {
+        return _this.doRequest(request, response);
+      });
+      return this.app.listen(this.port);
+    };
+
+    DropboxNodeServerDriver.prototype.closeServer = function() {
+      return this.app.close();
+    };
+
+    DropboxNodeServerDriver.prototype.doRequest = function(request, response) {
+      var data, match, token,
+        _this = this;
+      if (this.urlRe.exec(request.url)) {
+        match = this.tokenRe.exec(request.url);
+        if (match) {
+          token = decodeURIComponent(match[2]);
+          if (this.callbacks[token]) {
+            this.callbacks[token]();
+            delete this.callbacks[token];
+          }
+        }
+      }
+      data = '';
+      request.on('data', function(dataFragment) {
+        return data += dataFragment;
+      });
+      return request.on('end', function() {
+        if (_this.faviconFile && (request.url === '/favicon.ico')) {
+          return _this.sendFavicon(response);
+        } else {
+          return _this.closeBrowser(response);
+        }
+      });
+    };
+
+    DropboxNodeServerDriver.prototype.closeBrowser = function(response) {
+      var closeHtml;
+      closeHtml = "<!doctype html>\n<script type=\"text/javascript\">window.close();</script>\n<p>Please close this window.</p>";
+      response.writeHead(200, {
+        'Content-Length': closeHtml.length,
+        'Content-Type': 'text/html'
+      });
+      response.write(closeHtml);
+      return response.end;
+    };
+
+    DropboxNodeServerDriver.prototype.sendFavicon = function(response) {
+      return this.fs.readFile(this.faviconFile, function(error, data) {
+        response.writeHead(200, {
+          'Content-Length': data.length,
+          'Content-Type': 'image/x-icon'
+        });
+        response.write(data);
+        return response.end;
+      });
+    };
+
+    return DropboxNodeServerDriver;
+
+  })();
+
+  Dropbox = (function() {
+
+    function Dropbox(options) {
+      this.client = new DropboxClient(options);
+    }
+
+    return Dropbox;
+
+  })();
+
+  base64HmacSha1 = function(string, key) {
+    return arrayToBase64(hmacSha1(stringToArray(string), stringToArray(key), string.length, key.length));
+  };
+
+  base64Sha1 = function(string) {
+    return arrayToBase64(sha1(stringToArray(string), string.length));
+  };
+
+  if (typeof window === "undefined" || window === null) {
+    crypto = require('crypto');
+    base64HmacSha1 = function(string, key) {
+      var hmac;
+      hmac = crypto.createHmac('sha1', key);
+      hmac.update(string);
+      return hmac.digest('base64');
+    };
+    base64Sha1 = function(string) {
+      var hash;
+      hash = crypto.createHash('sha1');
+      hash.update(string);
+      return hash.digest('base64');
+    };
+  }
+
+  hmacSha1 = function(string, key, length, keyLength) {
+    var hash1, i, ipad, opad;
+    if (key.length > 16) {
+      key = sha1(key, keyLength);
+    }
+    ipad = (function() {
+      var _i, _results;
+      _results = [];
+      for (i = _i = 0; _i < 16; i = ++_i) {
+        _results.push(key[i] ^ 0x36363636);
+      }
+      return _results;
+    })();
+    opad = (function() {
+      var _i, _results;
+      _results = [];
+      for (i = _i = 0; _i < 16; i = ++_i) {
+        _results.push(key[i] ^ 0x5C5C5C5C);
+      }
+      return _results;
+    })();
+    hash1 = sha1(ipad.concat(string), 64 + length);
+    return sha1(opad.concat(hash1), 64 + 20);
+  };
+
+  sha1 = function(string, length) {
+    var a, a0, b, b0, c, c0, d, d0, e, e0, ft, i, j, kt, limit, state, t, _i;
+    string[length >> 2] |= 1 << (31 - ((length & 0x03) << 3));
+    string[(((length + 8) >> 6) << 4) + 15] = length << 3;
+    state = Array(80);
+    a = 1732584193;
+    b = -271733879;
+    c = -1732584194;
+    d = 271733878;
+    e = -1009589776;
+    i = 0;
+    limit = string.length;
+    while (i < limit) {
+      a0 = a;
+      b0 = b;
+      c0 = c;
+      d0 = d;
+      e0 = e;
+      for (j = _i = 0; _i < 80; j = ++_i) {
+        if (j < 16) {
+          state[j] = string[i + j];
+        } else {
+          state[j] = rotateLeft32(state[j - 3] ^ state[j - 8] ^ state[j - 14] ^ state[j - 16], 1);
+        }
+        if (j < 20) {
+          ft = (b & c) | ((~b) & d);
+          kt = 1518500249;
+        } else if (j < 40) {
+          ft = b ^ c ^ d;
+          kt = 1859775393;
+        } else if (j < 60) {
+          ft = (b & c) | (b & d) | (c & d);
+          kt = -1894007588;
+        } else {
+          ft = b ^ c ^ d;
+          kt = -899497514;
+        }
+        t = add32(add32(rotateLeft32(a, 5), ft), add32(add32(e, state[j]), kt));
+        e = d;
+        d = c;
+        c = rotateLeft32(b, 30);
+        b = a;
+        a = t;
+      }
+      a = add32(a, a0);
+      b = add32(b, b0);
+      c = add32(c, c0);
+      d = add32(d, d0);
+      e = add32(e, e0);
+      i += 16;
+    }
+    return [a, b, c, d, e];
+  };
+
+  /*
+  # Uncomment the definition below for debugging.
+  #
+  # Returns the hexadecimal representation of a 32-bit number.
+  xxx = (n) ->
+    if n < 0
+      n = (1 << 30) * 4 + n
+    n.toString 16
+  */
+
+
+  rotateLeft32 = function(value, count) {
+    return (value << count) | (value >>> (32 - count));
+  };
+
+  add32 = function(a, b) {
+    var high, low;
+    low = (a & 0xFFFF) + (b & 0xFFFF);
+    high = (a >> 16) + (b >> 16) + (low >> 16);
+    return (high << 16) | (low & 0xFFFF);
+  };
+
+  arrayToBase64 = function(array) {
+    var i, i2, limit, string, trit;
+    string = "";
+    i = 0;
+    limit = array.length * 4;
+    while (i < limit) {
+      i2 = i;
+      trit = ((array[i2 >> 2] >> ((3 - (i2 & 3)) << 3)) & 0xFF) << 16;
+      i2 += 1;
+      trit |= ((array[i2 >> 2] >> ((3 - (i2 & 3)) << 3)) & 0xFF) << 8;
+      i2 += 1;
+      trit |= (array[i2 >> 2] >> ((3 - (i2 & 3)) << 3)) & 0xFF;
+      string += _base64Digits[(trit >> 18) & 0x3F];
+      string += _base64Digits[(trit >> 12) & 0x3F];
+      i += 1;
+      if (i >= limit) {
+        string += '=';
+      } else {
+        string += _base64Digits[(trit >> 6) & 0x3F];
+      }
+      i += 1;
+      if (i >= limit) {
+        string += '=';
+      } else {
+        string += _base64Digits[trit & 0x3F];
+      }
+      i += 1;
+    }
+    return string;
+  };
+
+  _base64Digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+  stringToArray = function(string) {
+    var array, i, mask, _i, _ref;
+    array = [];
+    mask = 0xFF;
+    for (i = _i = 0, _ref = string.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+      array[i >> 2] |= (string.charCodeAt(i) & mask) << ((3 - (i & 3)) << 3);
+    }
+    return array;
+  };
+
+  DropboxOauth = (function() {
+
+    function DropboxOauth(options) {
+      this.key = this.k = null;
+      this.secret = this.s = null;
+      this.token = null;
+      this.tokenSecret = null;
+      this._appHash = null;
+      this.reset(options);
+    }
+
+    DropboxOauth.prototype.reset = function(options) {
+      var k, s, secret, _ref;
+      if (options.secret) {
+        this.k = this.key = options.key;
+        this.s = this.secret = options.secret;
+        this._appHash = null;
+      } else if (options.key) {
+        this.key = options.key;
+        this.secret = null;
+        secret = atob(dropboxEncodeKey(this.key).split('|', 2)[1]);
+        _ref = secret.split('?', 2), k = _ref[0], s = _ref[1];
+        this.k = decodeURIComponent(k);
+        this.s = decodeURIComponent(s);
+        this._appHash = null;
+      }
+      if (options.token) {
+        return this.setToken(options.token, options.tokenSecret);
+      } else {
+        return this.setToken(null, '');
+      }
+    };
+
+    DropboxOauth.prototype.setToken = function(token, tokenSecret) {
+      if (token && (!tokenSecret)) {
+        throw new Error('No secret supplied with the user token');
+      }
+      this.token = token;
+      this.tokenSecret = tokenSecret || '';
+      this.hmacKey = DropboxXhr.urlEncodeValue(this.s) + '&' + DropboxXhr.urlEncodeValue(tokenSecret);
+      return null;
+    };
+
+    DropboxOauth.prototype.authHeader = function(method, url, params) {
+      var header, oauth_params, param, value, _i, _len;
+      this.addAuthParams(method, url, params);
+      oauth_params = [];
+      for (param in params) {
+        value = params[param];
+        if (param.substring(0, 6) === 'oauth_') {
+          oauth_params.push(param);
+        }
+      }
+      oauth_params.sort();
+      header = [];
+      for (_i = 0, _len = oauth_params.length; _i < _len; _i++) {
+        param = oauth_params[_i];
+        header.push(DropboxXhr.urlEncodeValue(param) + '="' + DropboxXhr.urlEncodeValue(params[param]) + '"');
+        delete params[param];
+      }
+      return 'OAuth ' + header.join(',');
+    };
+
+    DropboxOauth.prototype.addAuthParams = function(method, url, params) {
+      this.boilerplateParams(params);
+      params.oauth_signature = this.signature(method, url, params);
+      return params;
+    };
+
+    DropboxOauth.prototype.boilerplateParams = function(params) {
+      params.oauth_consumer_key = this.k;
+      params.oauth_nonce = this.nonce();
+      params.oauth_signature_method = 'HMAC-SHA1';
+      if (this.token) {
+        params.oauth_token = this.token;
+      }
+      params.oauth_timestamp = Math.floor(Date.now() / 1000);
+      params.oauth_version = '1.0';
+      return params;
+    };
+
+    DropboxOauth.prototype.nonce = function() {
+      return Date.now().toString(36) + Math.random().toString(36);
+    };
+
+    DropboxOauth.prototype.signature = function(method, url, params) {
+      var string;
+      string = method.toUpperCase() + '&' + DropboxXhr.urlEncodeValue(url) + '&' + DropboxXhr.urlEncodeValue(DropboxXhr.urlEncode(params));
+      return base64HmacSha1(string, this.hmacKey);
+    };
+
+    DropboxOauth.prototype.appHash = function() {
+      if (this._appHash) {
+        return this._appHash;
+      }
+      return this._appHash = base64Sha1(this.k).replace(/\=/g, '');
+    };
+
+    return DropboxOauth;
+
+  })();
+
+  if (Date.now == null) {
+    Date.now = function() {
+      return (new Date()).getTime();
+    };
+  }
+
+  dropboxEncodeKey = function(key, secret) {
+    var i, k, result, s, x, y, z, _i, _j, _ref, _ref1, _results;
+    if (secret) {
+      secret = [encodeURIComponent(key), encodeURIComponent(secret)].join('?');
+      key = (function() {
+        var _i, _ref, _results;
+        _results = [];
+        for (i = _i = 0, _ref = key.length / 2; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+          _results.push(((key.charCodeAt(i * 2) & 15) * 16) + (key.charCodeAt(i * 2 + 1) & 15));
+        }
+        return _results;
+      })();
+    } else {
+      _ref = key.split('|', 2), key = _ref[0], secret = _ref[1];
+      key = atob(key);
+      key = (function() {
+        var _i, _ref1, _results;
+        _results = [];
+        for (i = _i = 0, _ref1 = key.length; 0 <= _ref1 ? _i < _ref1 : _i > _ref1; i = 0 <= _ref1 ? ++_i : --_i) {
+          _results.push(key.charCodeAt(i));
+        }
+        return _results;
+      })();
+      secret = atob(secret);
+    }
+    s = (function() {
+      _results = [];
+      for (_i = 0; _i < 256; _i++){ _results.push(_i); }
+      return _results;
+    }).apply(this);
+    y = 0;
+    for (x = _j = 0; _j < 256; x = ++_j) {
+      y = (y + s[i] + key[x % key.length]) % 256;
+      _ref1 = [s[y], s[x]], s[x] = _ref1[0], s[y] = _ref1[1];
+    }
+    x = y = 0;
+    result = (function() {
+      var _k, _ref2, _ref3, _results1;
+      _results1 = [];
+      for (z = _k = 0, _ref2 = secret.length; 0 <= _ref2 ? _k < _ref2 : _k > _ref2; z = 0 <= _ref2 ? ++_k : --_k) {
+        x = (x + 1) % 256;
+        y = (y + s[x]) % 256;
+        _ref3 = [s[y], s[x]], s[x] = _ref3[0], s[y] = _ref3[1];
+        k = s[(s[x] + s[y]) % 256];
+        _results1.push(String.fromCharCode((k ^ secret.charCodeAt(z)) % 256));
+      }
+      return _results1;
+    })();
+    key = (function() {
+      var _k, _ref2, _results1;
+      _results1 = [];
+      for (i = _k = 0, _ref2 = key.length; 0 <= _ref2 ? _k < _ref2 : _k > _ref2; i = 0 <= _ref2 ? ++_k : --_k) {
+        _results1.push(String.fromCharCode(key[i]));
+      }
+      return _results1;
+    })();
+    return [btoa(key.join('')), btoa(result.join(''))].join('|');
+  };
+
+  DropboxPulledChanges = (function() {
+
+    DropboxPulledChanges.parse = function(deltaInfo) {
+      if (deltaInfo && typeof deltaInfo === 'object') {
+        return new DropboxPulledChanges(deltaInfo);
+      } else {
+        return deltaInfo;
+      }
+    };
+
+    DropboxPulledChanges.prototype.blankSlate = void 0;
+
+    DropboxPulledChanges.prototype.cursorTag = void 0;
+
+    DropboxPulledChanges.prototype.changes = void 0;
+
+    DropboxPulledChanges.prototype.shouldPullAgain = void 0;
+
+    DropboxPulledChanges.prototype.shouldBackOff = void 0;
+
+    function DropboxPulledChanges(deltaInfo) {
+      var entry;
+      this.blankSlate = deltaInfo.reset || false;
+      this.cursorTag = deltaInfo.cursor;
+      this.shouldPullAgain = deltaInfo.has_more;
+      this.shouldBackOff = !this.shouldPullAgain;
+      if (deltaInfo.cursor && deltaInfo.cursor.length) {
+        this.changes = (function() {
+          var _i, _len, _ref, _results;
+          _ref = deltaInfo.entries;
+          _results = [];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            entry = _ref[_i];
+            _results.push(DropboxPullChange.parse(entry));
+          }
+          return _results;
+        })();
+      } else {
+        this.changes = [];
+      }
+    }
+
+    return DropboxPulledChanges;
+
+  })();
+
+  DropboxPullChange = (function() {
+
+    DropboxPullChange.parse = function(entry) {
+      if (entry && typeof entry === 'object') {
+        return new DropboxPullChange(entry);
+      } else {
+        return entry;
+      }
+    };
+
+    DropboxPullChange.prototype.path = void 0;
+
+    DropboxPullChange.prototype.wasRemoved = void 0;
+
+    DropboxPullChange.prototype.stat = void 0;
+
+    function DropboxPullChange(entry) {
+      this.path = entry[0];
+      this.stat = DropboxStat.parse(entry[1]);
+      if (this.stat) {
+        this.wasRemoved = false;
+      } else {
+        this.stat = null;
+        this.wasRemoved = true;
+      }
+    }
+
+    return DropboxPullChange;
+
+  })();
+
+  DropboxPublicUrl = (function() {
+
+    DropboxPublicUrl.parse = function(urlData, isDirect) {
+      if (urlData && typeof urlData === 'object') {
+        return new DropboxPublicUrl(urlData, isDirect);
+      } else {
+        return urlData;
+      }
+    };
+
+    DropboxPublicUrl.prototype.url = void 0;
+
+    DropboxPublicUrl.prototype.expiresAt = void 0;
+
+    DropboxPublicUrl.prototype.isDirect = void 0;
+
+    DropboxPublicUrl.prototype.isPreview = void 0;
+
+    function DropboxPublicUrl(urlData, isDirect) {
+      this.url = urlData.url;
+      this.expiresAt = new Date(Date.parse(urlData.expires));
+      if (isDirect === true) {
+        this.isDirect = true;
+      } else if (isDirect === false) {
+        this.isDirect = false;
+      } else {
+        this.isDirect = Date.now() - this.expiresAt <= 86400000;
+      }
+      this.isPreview = !this.isDirect;
+    }
+
+    return DropboxPublicUrl;
+
+  })();
+
+  DropboxCopyReference = (function() {
+
+    DropboxCopyReference.parse = function(refData) {
+      if (refData && (typeof refData === 'object' || typeof refData === 'string')) {
+        return new DropboxCopyReference(refData);
+      } else {
+        return refData;
+      }
+    };
+
+    DropboxCopyReference.prototype.tag = void 0;
+
+    DropboxCopyReference.prototype.expiresAt = void 0;
+
+    function DropboxCopyReference(refData) {
+      if (typeof refData === 'object') {
+        this.tag = refData.copy_ref;
+        this.expiresAt = new Date(Date.parse(refData.expires));
+      } else {
+        this.tag = refData;
+        this.expiresAt = new Date();
+      }
+    }
+
+    return DropboxCopyReference;
+
+  })();
+
+  DropboxStat = (function() {
+
+    DropboxStat.parse = function(metadata) {
+      if (metadata && typeof metadata === 'object') {
+        return new DropboxStat(metadata);
+      } else {
+        return metadata;
+      }
+    };
+
+    DropboxStat.prototype.path = null;
+
+    DropboxStat.prototype.name = null;
+
+    DropboxStat.prototype.inAppFolder = null;
+
+    DropboxStat.prototype.isFolder = null;
+
+    DropboxStat.prototype.isFile = null;
+
+    DropboxStat.prototype.isRemoved = null;
+
+    DropboxStat.prototype.typeIcon = null;
+
+    DropboxStat.prototype.versionTag = null;
+
+    DropboxStat.prototype.mimeType = null;
+
+    DropboxStat.prototype.size = null;
+
+    DropboxStat.prototype.humanSize = null;
+
+    DropboxStat.prototype.hasThumbnail = null;
+
+    DropboxStat.prototype.modifiedAt = null;
+
+    DropboxStat.prototype.clientModifiedAt = null;
+
+    function DropboxStat(metadata) {
+      var lastIndex, nameSlash, _ref, _ref1;
+      this.path = metadata.path;
+      if (this.path.substring(0, 1) !== '/') {
+        this.path = '/' + this.path;
+      }
+      lastIndex = this.path.length - 1;
+      if (lastIndex >= 0 && this.path.substring(lastIndex) === '/') {
+        this.path = this.path.substring(0, lastIndex);
+      }
+      nameSlash = this.path.lastIndexOf('/');
+      this.name = this.path.substring(nameSlash + 1);
+      this.isFolder = metadata.is_dir || false;
+      this.isFile = !this.isFolder;
+      this.isRemoved = metadata.is_deleted || false;
+      this.typeIcon = metadata.icon;
+      if ((_ref = metadata.modified) != null ? _ref.length : void 0) {
+        this.modifiedAt = new Date(Date.parse(metadata.modified));
+      } else {
+        this.modifiedAt = null;
+      }
+      if ((_ref1 = metadata.client_mtime) != null ? _ref1.length : void 0) {
+        this.clientModifiedAt = new Date(Date.parse(metadata.client_mtime));
+      } else {
+        this.clientModifiedAt = null;
+      }
+      switch (metadata.root) {
+        case 'dropbox':
+          this.inAppFolder = false;
+          break;
+        case 'app_folder':
+          this.inAppFolder = true;
+          break;
+        default:
+          this.inAppFolder = null;
+      }
+      this.size = metadata.bytes || 0;
+      this.humanSize = metadata.size || '';
+      this.hasThumbnail = metadata.thumb_exists || false;
+      if (this.isFolder) {
+        this.versionTag = metadata.hash;
+        this.mimeType = metadata.mime_type || 'inode/directory';
+      } else {
+        this.versionTag = metadata.rev;
+        this.mimeType = metadata.mime_type || 'application/octet-stream';
+      }
+    }
+
+    return DropboxStat;
+
+  })();
+
+  DropboxUserInfo = (function() {
+
+    DropboxUserInfo.parse = function(userInfo) {
+      if (userInfo && typeof userInfo === 'object') {
+        return new DropboxUserInfo(userInfo);
+      } else {
+        return userInfo;
+      }
+    };
+
+    DropboxUserInfo.prototype.name = null;
+
+    DropboxUserInfo.prototype.email = null;
+
+    DropboxUserInfo.prototype.countryCode = null;
+
+    DropboxUserInfo.prototype.uid = null;
+
+    DropboxUserInfo.prototype.referralUrl = null;
+
+    DropboxUserInfo.prototype.publicAppUrl = null;
+
+    DropboxUserInfo.prototype.quota = null;
+
+    DropboxUserInfo.prototype.usedQuota = null;
+
+    DropboxUserInfo.prototype.privateBytes = null;
+
+    DropboxUserInfo.prototype.sharedBytes = null;
+
+    function DropboxUserInfo(userInfo) {
+      var lastIndex;
+      this.name = userInfo.display_name;
+      this.email = userInfo.email;
+      this.countryCode = userInfo.country || null;
+      this.uid = userInfo.uid.toString();
+      if (userInfo.public_app_url) {
+        this.publicAppUrl = userInfo.public_app_url;
+        lastIndex = this.publicAppUrl.length - 1;
+        if (lastIndex >= 0 && this.publicAppUrl.substring(lastIndex) === '/') {
+          this.publicAppUrl = this.publicAppUrl.substring(0, lastIndex);
+        }
+      } else {
+        this.publicAppUrl = null;
+      }
+      this.referralUrl = userInfo.referral_link;
+      this.quota = userInfo.quota_info.quota;
+      this.privateBytes = userInfo.quota_info.normal || 0;
+      this.sharedBytes = userInfo.quota_info.shared || 0;
+      this.usedQuota = this.privateBytes + this.sharedBytes;
+    }
+
+    return DropboxUserInfo;
+
+  })();
+
+  if (typeof window !== "undefined" && window !== null) {
+    if (window.XDomainRequest && !('withCredentials' in new XMLHttpRequest())) {
+      DropboxXhrRequest = window.XDomainRequest;
+      DropboxXhrIeMode = true;
+      DropboxXhrCanSendForms = false;
+    } else {
+      DropboxXhrRequest = window.XMLHttpRequest;
+      DropboxXhrIeMode = false;
+      DropboxXhrCanSendForms = window.navigator.userAgent.indexOf('Firefox') === -1;
+    }
+  } else {
+    DropboxXhrRequest = require('xmlhttprequest').XMLHttpRequest;
+    DropboxXhrIeMode = false;
+    DropboxXhrCanSendForms = false;
+  }
+
+  DropboxXhr = (function() {
+
+    function DropboxXhr() {}
+
+    DropboxXhr.Request = DropboxXhrRequest;
+
+    DropboxXhr.ieMode = DropboxXhrIeMode;
+
+    DropboxXhr.canSendForms = DropboxXhrCanSendForms;
+
+    DropboxXhr.request = function(method, url, params, authHeader, callback) {
+      return this.request2(method, url, params, authHeader, null, null, callback);
+    };
+
+    DropboxXhr.request2 = function(method, url, params, authHeader, body, responseType, callback) {
+      var headers, paramsInUrl, queryString;
+      paramsInUrl = method === 'GET' || (body != null) || this.ieMode;
+      if (paramsInUrl) {
+        queryString = DropboxXhr.urlEncode(params);
+        if (queryString.length !== 0) {
+          url = [url, '?', DropboxXhr.urlEncode(params)].join('');
+        }
+      }
+      headers = {};
+      if (authHeader) {
+        headers['Authorization'] = authHeader;
+      }
+      if (body != null) {
+        if (typeof body === 'string') {
+          headers['Content-Type'] = 'text/plain; charset=utf8';
+        }
+      } else if (!paramsInUrl) {
+        headers['Content-Type'] = 'application/x-www-form-urlencoded';
+        body = DropboxXhr.urlEncode(params);
+      }
+      return DropboxXhr.xhrRequest(method, url, headers, body, responseType, callback);
+    };
+
+    DropboxXhr.multipartRequest = function(url, fileField, params, authHeader, callback) {
+      var body, boundary, fileData, fileType, headers, useFormData;
+      url = [url, '?', DropboxXhr.urlEncode(params)].join('');
+      fileData = fileField.value;
+      useFormData = (typeof fileData === 'object') && (((typeof Blob !== "undefined" && Blob !== null) && (fileField.value instanceof Blob)) || ((typeof File !== "undefined" && File !== null) && (fileField.value instanceof File)));
+      if (useFormData) {
+        headers = {};
+        body = new FormData();
+        body.append(fileField.name, fileData, fileField.fileName);
+      } else {
+        fileType = fileField.contentType || 'application/octet-stream';
+        boundary = this.multipartBoundary();
+        headers = {
+          'Content-Type': "multipart/form-data; boundary=" + boundary
+        };
+        body = ['--', boundary, "\r\n", 'Content-Disposition: form-data; name="', fileField.name, '"; filename="', fileField.fileName, "\"\r\n", 'Content-Type: ', fileType, "\r\n", "Content-Transfer-Encoding: binary\r\n\r\n", fileData, "\r\n", '--', boundary, '--', "\r\n"].join('');
+      }
+      if (authHeader) {
+        headers['Authorization'] = authHeader;
+      }
+      return DropboxXhr.xhrRequest('POST', url, headers, body, null, callback);
+    };
+
+    DropboxXhr.multipartBoundary = function() {
+      return [Date.now().toString(36), Math.random().toString(36)].join('----');
+    };
+
+    DropboxXhr.xhrRequest = function(method, url, headers, body, responseType, callback) {
+      var header, value, xhr;
+      xhr = new this.Request();
+      if (this.ieMode) {
+        xhr.onload = function() {
+          return DropboxXhr.onLoad(xhr, method, url, callback);
+        };
+        xhr.onerror = function() {
+          return DropboxXhr.onError(xhr, method, url, callback);
+        };
+      } else {
+        xhr.onreadystatechange = function() {
+          return DropboxXhr.onReadyStateChange(xhr, method, url, responseType, callback);
+        };
+      }
+      xhr.open(method, url, true);
+      if (responseType) {
+        if (responseType === 'b') {
+          if (xhr.overrideMimeType) {
+            xhr.overrideMimeType('text/plain; charset=x-user-defined');
+          }
+        } else {
+          xhr.responseType = responseType;
+        }
+      }
+      if (!this.ieMode) {
+        for (header in headers) {
+          if (!__hasProp.call(headers, header)) continue;
+          value = headers[header];
+          xhr.setRequestHeader(header, value);
+        }
+      }
+      if (body != null) {
+        xhr.send(body);
+      } else {
+        xhr.send();
+      }
+      return xhr;
+    };
+
+    DropboxXhr.urlEncode = function(object) {
+      var chunks, key, value;
+      chunks = [];
+      for (key in object) {
+        value = object[key];
+        chunks.push(this.urlEncodeValue(key) + '=' + this.urlEncodeValue(value));
+      }
+      return chunks.sort().join('&');
+    };
+
+    DropboxXhr.urlEncodeValue = function(object) {
+      return encodeURIComponent(object.toString()).replace(/\!/g, '%21').replace(/'/g, '%27').replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\*/g, '%2A');
+    };
+
+    DropboxXhr.urlDecode = function(string) {
+      var kvp, result, token, _i, _len, _ref;
+      result = {};
+      _ref = string.split('&');
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        token = _ref[_i];
+        kvp = token.split('=');
+        result[decodeURIComponent(kvp[0])] = decodeURIComponent(kvp[1]);
+      }
+      return result;
+    };
+
+    DropboxXhr.onReadyStateChange = function(xhr, method, url, responseType, callback) {
+      var apiError, bytes, dirtyText, i, metadata, metadataJson, text, _i, _ref;
+      if (xhr.readyState !== 4) {
+        return true;
+      }
+      if (xhr.status < 200 || xhr.status >= 300) {
+        apiError = new DropboxApiError(xhr, method, url);
+        callback(apiError);
+        return true;
+      }
+      metadataJson = xhr.getResponseHeader('x-dropbox-metadata');
+      if (metadataJson != null ? metadataJson.length : void 0) {
+        try {
+          metadata = JSON.parse(metadataJson);
+        } catch (e) {
+          metadata = void 0;
+        }
+      } else {
+        metadata = void 0;
+      }
+      if (responseType) {
+        if (responseType === 'b') {
+          dirtyText = xhr.responseText != null ? xhr.responseText : xhr.response;
+          /*
+                  jsString = ['["']
+                  for i in [0...dirtyText.length]
+                    hexByte = (dirtyText.charCodeAt(i) & 0xFF).toString(16)
+                    if hexByte.length is 2
+                      jsString.push "\\u00#{hexByte}"
+                    else
+                      jsString.push "\\u000#{hexByte}"
+                  jsString.push '"]'
+                  console.log jsString
+                  text = JSON.parse(jsString.join(''))[0]
+          */
+
+          bytes = [];
+          for (i = _i = 0, _ref = dirtyText.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+            bytes.push(String.fromCharCode(dirtyText.charCodeAt(i) & 0xFF));
+          }
+          text = bytes.join('');
+          callback(null, text, metadata);
+        } else {
+          callback(null, xhr.response, metadata);
+        }
+        return true;
+      }
+      text = xhr.responseText != null ? xhr.responseText : xhr.response;
+      switch (xhr.getResponseHeader('Content-Type')) {
+        case 'application/x-www-form-urlencoded':
+          callback(null, DropboxXhr.urlDecode(text), metadata);
+          break;
+        case 'application/json':
+        case 'text/javascript':
+          callback(null, JSON.parse(text), metadata);
+          break;
+        default:
+          callback(null, text, metadata);
+      }
+      return true;
+    };
+
+    DropboxXhr.onLoad = function(xhr, method, url, callback) {
+      var text;
+      text = xhr.responseText;
+      switch (xhr.contentType) {
+        case 'application/x-www-form-urlencoded':
+          callback(null, DropboxXhr.urlDecode(text), void 0);
+          break;
+        case 'application/json':
+        case 'text/javascript':
+          callback(null, JSON.parse(text), void 0);
+          break;
+        default:
+          callback(null, text, void 0);
+      }
+      return true;
+    };
+
+    DropboxXhr.onError = function(xhr, method, url, callback) {
+      var apiError;
+      apiError = new DropboxApiError(xhr, method, url);
+      callback(apiError);
+      return true;
+    };
+
+    return DropboxXhr;
+
+  })();
+
+  if ((typeof module !== "undefined" && module !== null ? module.exports : void 0) != null) {
+    module.exports = Dropbox;
+  } else if (typeof window !== "undefined" && window !== null) {
+    window.Dropbox = Dropbox;
+  } else {
+    throw new Error('This library only supports node.js and modern browsers.');
+  }
+
+  Dropbox.ApiError = DropboxApiError;
+
+  Dropbox.Client = DropboxClient;
+
+  Dropbox.CopyReference = DropboxCopyReference;
+
+  Dropbox.Drivers = {
+    Popup: DropboxPopupDriver,
+    Redirect: DropboxRedirectDriver,
+    NodeServer: DropboxNodeServerDriver
+  };
+
+  Dropbox.Oauth = DropboxOauth;
+
+  Dropbox.PublicUrl = DropboxPublicUrl;
+
+  Dropbox.PulledChanges = DropboxPulledChanges;
+
+  Dropbox.PullChange = DropboxPullChange;
+
+  Dropbox.Stat = DropboxStat;
+
+  Dropbox.UserInfo = DropboxUserInfo;
+
+  Dropbox.Xhr = DropboxXhr;
+
+  Dropbox.atob = atob;
+
+  Dropbox.btoa = btoa;
+
+  Dropbox.hmac = base64HmacSha1;
+
+  Dropbox.sha1 = base64Sha1;
+
+  Dropbox.encodeKey = dropboxEncodeKey;
+
+}).call(this);
