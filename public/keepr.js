@@ -15,10 +15,13 @@
       this.$accountTemplate = $('#account-template').text();
       this.$generatePasswordTemplate = $('#generate-password-template').text();
       this.$deleteAccountTemplate = $('#delete-account-template').text();
+      $('#logout').click(function(event) {
+        return _this.logout();
+      });
       onLoad = _.after(2, function(err) {
         if (err) {
           $('#error-notice').removeClass('hidden');
-          return alert(err);
+          return console.log(err);
         }
         _this.wire();
         _this.render();
@@ -208,6 +211,13 @@
         return str.replace('+', '-').replace('/', '_');
       };
       return this.passwordGenerator(passwordKey, privateKey, sha1, sha1base64, urlEncode);
+    };
+
+    Keepr.prototype.logout = function() {
+      var _this = this;
+      return this.jsonDrop.fsys.dropbox.signOut(function(error) {
+        return window.location.href = "login.html";
+      });
     };
 
     return Keepr;

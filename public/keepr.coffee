@@ -9,10 +9,11 @@ class Keepr
     @$accountTemplate = $('#account-template').text()
     @$generatePasswordTemplate = $('#generate-password-template').text()
     @$deleteAccountTemplate = $('#delete-account-template').text()
+    $('#logout').click (event) => @logout()
     onLoad = _.after 2, (err) =>
         if err
           $('#error-notice').removeClass 'hidden'
-          return alert err
+          return console.log err
         @wire()
         @render()
         @$root.removeClass 'hidden'
@@ -129,6 +130,11 @@ class Keepr
       str.replace('+', '-').replace('/', '_')
     @passwordGenerator(passwordKey, privateKey, sha1, sha1base64, urlEncode)
 
+
+  # Called when the user wants to log out of the application.
+  logout: () ->
+    @jsonDrop.fsys.dropbox.signOut (error) =>
+      window.location.href = "login.html"
 
 class Account
     constructor: ({@url, @username, @passwordKey}) ->
