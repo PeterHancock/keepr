@@ -410,10 +410,19 @@
     };
 
     NodeManager.prototype._readScalar = function(node, callback) {
+      var _this = this;
       return this.fsys.readFile(NodeManager.pathForScalar(node), function(err, val) {
-        val = err ? null : JSON.parse(val).val;
+        val = err ? null : _this._readFile(val).val;
         return callback(err, val);
       });
+    };
+
+    NodeManager.prototype._readFile = function(text) {
+      if (_.isObject(text)) {
+        return text;
+      } else {
+        return JSON.parse(text);
+      }
     };
 
     NodeManager.prototype._readObject = function(node, entries, callback) {
