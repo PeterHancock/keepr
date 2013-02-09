@@ -141,7 +141,7 @@
         return;
       }
       this.accounts.push(account);
-      return this.jsonDrop.get('accounts').pushVal(account, function(err, node) {
+      return this.jsonDrop.get('accounts').pushVal(account.val(), function(err, node) {
         if (err) {
           return alert(err);
         }
@@ -234,6 +234,14 @@
       }
       this.node = null;
     }
+
+    Account.prototype.val = function() {
+      return {
+        url: this.url,
+        username: this.username,
+        passwordKey: this.passwordKey
+      };
+    };
 
     return Account;
 

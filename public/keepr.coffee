@@ -83,7 +83,7 @@ class Keepr
       alert "The url '#{url}' is invalid"
       return
     @accounts.push account
-    @jsonDrop.get('accounts').pushVal account, (err, node) =>
+    @jsonDrop.get('accounts').pushVal account.val(), (err, node) =>
       return alert err if err
       account.node = node
       @render()
@@ -141,7 +141,8 @@ class Account
       catch error
         throw error
       @node = null
-
+    val: () ->
+      {url: @url, username: @username, passwordKey :@passwordKey}
 class Util
   @splitUrl = (url) ->
     [protocol, remainder] = url.split '://'
