@@ -27,7 +27,7 @@
         _this.render();
         return _this.$root.removeClass('hidden');
       });
-      this.jsonDrop.get('passwordGenerator').getVal(function(err, val) {
+      this.jsonDrop.get('passwordGenerator').get(function(err, val) {
         if (err) {
           return onLoad(err);
         }
@@ -141,7 +141,7 @@
         return;
       }
       this.accounts.push(account);
-      return this.jsonDrop.get('accounts').pushVal(account.val(), function(err, node) {
+      return this.jsonDrop.get('accounts').push(account.val(), function(err, node) {
         if (err) {
           return alert(err);
         }

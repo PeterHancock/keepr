@@ -17,7 +17,7 @@ class Keepr
         @wire()
         @render()
         @$root.removeClass 'hidden'
-    @jsonDrop.get('passwordGenerator').getVal (err, val) =>
+    @jsonDrop.get('passwordGenerator').get (err, val) =>
       return onLoad(err) if err
       @passwordGenerator = Function("passwordKey, privateKey, sha1, sha1base64, urlEncode", val)
       onLoad()
@@ -83,7 +83,7 @@ class Keepr
       alert "The url '#{url}' is invalid"
       return
     @accounts.push account
-    @jsonDrop.get('accounts').pushVal account.val(), (err, node) =>
+    @jsonDrop.get('accounts').push account.val(), (err, node) =>
       return alert err if err
       account.node = node
       @render()
