@@ -215,17 +215,17 @@
             });
           }, function(e) {
             if (e) {
-              return callback(null, "" + e + "\nRemove all rollback due to pushAll error: " + err);
+              return callback("" + e + "\nRemove all rollback due to pushAll error: " + err);
             } else {
-              return callback(null, "pushAll error: " + err);
+              return callback("pushAll error: " + err);
             }
           });
         } else {
-          return callback(children);
+          return callback(null, children);
         }
       };
       Collections.eachSeries(array, function(val, index, callback) {
-        return _this.push(val, function(child, err) {
+        return _this.push(val, function(err, child) {
           if (err) {
             return callback(err);
           }
@@ -389,6 +389,10 @@
       this.fsys = _arg.fsys;
     }
 
+    NodeManager.isArrayNodeElement = function(name) {
+      return /^_.*/.test(name);
+    };
+
     NodeManager.pathForNode = function(node, file) {
       var filePart, pathPart;
       filePart = file ? '/' + file : '';
@@ -415,7 +419,7 @@
       return this.fsys.readdir(NodeManager.pathForNode(node), function(error, entries) {
         return Collections.eachAsync(entries, function(dir, index, callback) {
           var child;
-          if (/^-.*/.test(dir)) {
+          if (NodeManager.isArrayNodeElement(dir)) {
             child = node.child(dir);
             return _this.getVal(child, function(err, val) {
               if (err) {
@@ -447,7 +451,7 @@
               iterator(val, child, index);
             }
             index = index + 1;
-            return setTimeout(next, 0);
+            return _.defer(next);
           }
         };
         return function(i, val, child) {
@@ -458,7 +462,7 @@
       return this.fsys.readdir(NodeManager.pathForNode(node), function(error, entries) {
         return Collections.eachAsync(entries, function(dir, index, callback) {
           var child;
-          if (/^-.*/.test(dir)) {
+          if (NodeManager.isArrayNodeElement(dir)) {
             child = node.child(dir);
             return _this.getVal(child, function(err, val) {
               if (err) {
@@ -522,7 +526,7 @@
       hasChildren = false;
       return this.fsys.readdir(NodeManager.pathForNode(node), function(error, entries) {
         return Collections.eachAsync(entries, function(dir, index, callback) {
-          if (/^-.*/.test(dir)) {
+          if (/^_.*/.test(dir)) {
             return _this.fsys.remove(NodeManager.pathForNode(node, dir), function(err, stat) {
               return callback();
             });
@@ -574,7 +578,7 @@
       counter = -1;
       return function() {
         counter = counter + 1;
-        return "-" + (new Date().getTime().toString(36)) + "-" + counter;
+        return "_" + (new Date().getTime().toString(36)) + "-" + counter;
       };
     })();
 
