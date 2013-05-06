@@ -137,31 +137,43 @@
       });
     };
 
+    Keepr.hashPassword = function(password, key) {
+      return CryptoJS.SHA1(password + key).toString().substring(0, 4);
+    };
+
     Keepr.prototype.onCreateAccount = function(event) {
-      var account, key, url, username,
+      var key, url, username,
         _this = this;
       event.preventDefault();
       url = $('#new-url').val();
       username = $('#new-username').val();
       key = $('#new-password-key').val();
-      try {
-        account = new Account({
-          url: url,
-          username: username,
-          passwordKey: key
-        });
-      } catch (error) {
-        alert("The url '" + url + "' is invalid");
-        return;
-      }
-      this.accounts.push(account);
-      return this.jsonDrop.get('accounts').push(account.val(), function(err, node) {
+      return this.promptRepeatedPassword(function(err, privateKey) {
+        var account, passwordHash;
         if (err) {
           return alert(err);
         }
-        account.node = node;
-        _this.render();
-        return _this.clearNewAccountForm();
+        passwordHash = Keepr.hashPassword(_this.generatePassword(privateKey, key));
+        console.log(passwordHash);
+        try {
+          account = new Account({
+            url: url,
+            username: username,
+            passwordKey: key,
+            passwordHash: passwordHash
+          });
+        } catch (error) {
+          return alert("The url '" + url + "' is invalid");
+        }
+        _this.accounts.push(account);
+        return _this.jsonDrop.get('accounts').push(account.val(), function(err, node) {
+          if (err) {
+            return alert(err);
+          }
+          account.node = node;
+          _this.render();
+          return _this.clearNewAccountForm();
+        });
       });
     };
 
@@ -174,10 +186,15 @@
     Keepr.prototype.onGeneratePassword = function(event, account) {
       var _this = this;
       return this.promptPassword(function(err, privateKey) {
+        var hash;
         if (err) {
           return alert(err);
         }
-        return _this.showPassword(account, privateKey);
+        hash = Keepr.hashPassword(_this.generatePassword(privateKey, account.passwordKey));
+        if (hash !== account.passwordHash) {
+          return alert('invalid');
+        }
+        return _this.showPassword(account, _this.generatePassword(account.passwordKey, privateKey));
       });
     };
 
@@ -219,10 +236,9 @@
       });
     };
 
-    Keepr.prototype.showPassword = function(account, privateKey) {
-      var $modal, $modalPlaceholder, $tmpl, password,
+    Keepr.prototype.showPassword = function(account, password) {
+      var $modal, $modalPlaceholder, $tmpl,
         _this = this;
-      password = this.generatePassword(account.passwordKey, privateKey);
       $tmpl = $('#show-password-template').text();
       $modalPlaceholder = $('#modal-holder');
       $modalPlaceholder.empty().append($tmpl);
@@ -266,7 +282,8 @@
   Account = (function() {
 
     function Account(_arg) {
-      this.url = _arg.url, this.username = _arg.username, this.passwordKey = _arg.passwordKey;
+      this.url = _arg.url, this.username = _arg.username, this.passwordKey = _arg.passwordKey, this.passwordHash = _arg.passwordHash;
+      console.log(this.passwordHash);
       try {
         Util.splitUrl(this.url);
       } catch (error) {
@@ -279,7 +296,8 @@
       return {
         url: this.url,
         username: this.username,
-        passwordKey: this.passwordKey
+        passwordKey: this.passwordKey,
+        passwordHash: this.passwordHash
       };
     };
 
