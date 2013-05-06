@@ -105,12 +105,31 @@
       $('.url', $modal).text(account.url);
       $('.username', $modal).text(account.username);
       $('.password-key', $modal).text(account.passwordKey);
+      $('.update-hash-button', $modal).click(function(event) {
+        return _this.onUpdateHash(account);
+      });
       $('.account-delete-button', $modal).click(function(event) {
         return _this.onDeleteAccount(event, account);
       });
       $modal.modal('show');
       return $modal.on('hidden', function() {
         return log('Done editing');
+      });
+    };
+
+    Keepr.prototype.onUpdateHash = function(account) {
+      var _this = this;
+      return this.promptRepeatedPrivateKey(function(err, privateKey) {
+        var passwordHash;
+        if (err) {
+          return alert(err);
+        }
+        passwordHash = Keepr.hashPassword(_this.generatePassword(privateKey, account.passwordKey));
+        return account.updatePasswordHash(passwordHash, function(err) {
+          if (err) {
+            return alert("Could not update password hash");
+          }
+        });
       });
     };
 
@@ -137,33 +156,42 @@
       });
     };
 
+    Keepr.hashPassword = function(password, key) {
+      return CryptoJS.SHA1(password + key).toString().substring(0, 4);
+    };
+
     Keepr.prototype.onCreateAccount = function(event) {
-      var account, key, url, username,
+      var key, url, username,
         _this = this;
       event.preventDefault();
       url = $('#new-url').val();
       username = $('#new-username').val();
       key = $('#new-password-key').val();
-      $('#new-key-button').attr('disabled', 'disabled');
-      try {
-        account = new Account({
-          url: url,
-          username: username,
-          passwordKey: key
-        });
-      } catch (error) {
-        alert("The url '" + url + "' is invalid");
-        return;
-      }
-      this.accounts.push(account);
-      return this.jsonDrop.get('accounts').push(account.val(), function(err, node) {
+      return this.promptRepeatedPrivateKey(function(err, privateKey) {
+        var account, passwordHash;
         if (err) {
           return alert(err);
         }
-        account.node = node;
-        _this.render();
-        $('#new-key-button').removeAttr('disabled');
-        return _this.clearNewAccountForm();
+        passwordHash = Keepr.hashPassword(_this.generatePassword(privateKey, key));
+        try {
+          account = new Account({
+            url: url,
+            username: username,
+            passwordKey: key,
+            passwordHash: passwordHash
+          });
+        } catch (error) {
+          return alert("The url '" + url + "' is invalid");
+        }
+        _this.accounts.push(account);
+        return _this.jsonDrop.get('accounts').push(account.val(), function(err, node) {
+          if (err) {
+            return alert(err);
+          }
+          account.node = node;
+          _this.render();
+          return _this.clearNewAccountForm();
+        });
       });
     };
 
@@ -174,6 +202,38 @@
     };
 
     Keepr.prototype.onGeneratePassword = function(event, account) {
+      var _this = this;
+      return this.promptPrivateKey(function(err, privateKey) {
+        var hash;
+        if (err) {
+          return alert(err);
+        }
+        hash = Keepr.hashPassword(_this.generatePassword(privateKey, account.passwordKey));
+        if (hash !== account.passwordHash) {
+          return alert('invalid');
+        }
+        return _this.showPassword(account, _this.generatePassword(account.passwordKey, privateKey));
+      });
+    };
+
+    Keepr.prototype.promptPrivateKey = function(callback) {
+      var $modal, $modalPlaceholder,
+        _this = this;
+      $modalPlaceholder = $('#modal-holder');
+      $modalPlaceholder.empty().append($($('#generate-single-password-template').text()));
+      $modal = $('.modal', $modalPlaceholder);
+      $modal.modal('show');
+      return $('#generate-password-form').submit(function(event) {
+        var privateKey;
+        event.preventDefault();
+        privateKey = $('#private-key').val();
+        $modal.modal('hide');
+        $modalPlaceholder.empty();
+        return callback(null, privateKey);
+      });
+    };
+
+    Keepr.prototype.promptRepeatedPrivateKey = function(callback) {
       var $modal, $modalPlaceholder,
         _this = this;
       $modalPlaceholder = $('#modal-holder');
@@ -188,16 +248,15 @@
         $modal.modal('hide');
         $modalPlaceholder.empty();
         if (privateKey !== privateKeyRepeat) {
-          return alert('passwords do not match');
+          return callback('passwords do not match');
         }
-        return _this.showPassword(account, privateKey);
+        return callback(null, privateKey);
       });
     };
 
-    Keepr.prototype.showPassword = function(account, privateKey) {
-      var $modal, $modalPlaceholder, $tmpl, password,
+    Keepr.prototype.showPassword = function(account, password) {
+      var $modal, $modalPlaceholder, $tmpl,
         _this = this;
-      password = this.generatePassword(account.passwordKey, privateKey);
       $tmpl = $('#show-password-template').text();
       $modalPlaceholder = $('#modal-holder');
       $modalPlaceholder.empty().append($tmpl);
@@ -241,7 +300,7 @@
   Account = (function() {
 
     function Account(_arg) {
-      this.url = _arg.url, this.username = _arg.username, this.passwordKey = _arg.passwordKey;
+      this.url = _arg.url, this.username = _arg.username, this.passwordKey = _arg.passwordKey, this.passwordHash = _arg.passwordHash;
       try {
         Util.splitUrl(this.url);
       } catch (error) {
@@ -254,8 +313,24 @@
       return {
         url: this.url,
         username: this.username,
-        passwordKey: this.passwordKey
+        passwordKey: this.passwordKey,
+        passwordHash: this.passwordHash
       };
+    };
+
+    Account.prototype.updatePasswordHash = function(passwordHash, callback) {
+      var currentPasswordHash,
+        _this = this;
+      currentPasswordHash = this.passwordHash;
+      this.passwordHash = passwordHash;
+      return this.node.set(this.val(), function(err) {
+        if (err) {
+          _this.passwordHash = currentPasswordHash;
+          return callback(err);
+        } else {
+          return callback();
+        }
+      });
     };
 
     return Account;

@@ -62,9 +62,17 @@ class Keepr
     $('.url', $modal ).text account.url
     $('.username', $modal ).text account.username
     $('.password-key', $modal ).text account.passwordKey
+    $('.update-hash-button', $modal).click (event) => @onUpdateHash account
     $('.account-delete-button', $modal).click (event) => @onDeleteAccount event, account
     $modal.modal 'show'
     $modal.on 'hidden', => log 'Done editing'
+
+  onUpdateHash: (account) ->
+    @promptRepeatedPrivateKey (err, privateKey) =>
+      return alert err if err
+      passwordHash = Keepr.hashPassword @generatePassword(privateKey, account.passwordKey)
+      account.updatePasswordHash passwordHash, (err) =>
+        return alert "Could not update password hash" if err
 
   onDeleteAccount: (event, account) ->
     @$modalPlaceholder.empty().append(@$deleteAccountTemplate)
@@ -79,29 +87,51 @@ class Keepr
       $modal.modal 'hide'
     $modal.on 'hidden', => log 'Cancelled the deletion of account'
 
+  @hashPassword = (password, key) ->
+    return CryptoJS.SHA1(password + key).toString().substring(0,4)
+
   onCreateAccount: (event) ->
     event.preventDefault()
     url = $('#new-url').val()
     username = $('#new-username').val()
     key = $('#new-password-key').val()
-    $('#new-key-button').attr 'disabled', 'disabled'
-    try
-      account = new Account(url: url, username: username, passwordKey: key)
-    catch error
-      alert "The url '#{url}' is invalid"
-      return
-    @accounts.push account
-    @jsonDrop.get('accounts').push account.val(), (err, node) =>
+    @promptRepeatedPrivateKey (err, privateKey) =>
       return alert err if err
-      account.node = node
-      @render()
-      $('#new-key-button').removeAttr 'disabled'
-      @clearNewAccountForm()
+      passwordHash = Keepr.hashPassword @generatePassword(privateKey, key)
+      try
+        account = new Account(url: url, username: username, passwordKey: key, passwordHash: passwordHash)
+      catch error
+        return alert "The url '#{url}' is invalid"
+      @accounts.push account
+      @jsonDrop.get('accounts').push account.val(), (err, node) =>
+        return alert err if err
+        account.node = node
+        @render()
+        @clearNewAccountForm()
 
   clearNewAccountForm: ->
     $('#new-account-form input').each -> $(this).val('')
 
   onGeneratePassword: (event, account) ->
+    @promptPrivateKey (err, privateKey) =>
+      return alert err if err
+      hash = Keepr.hashPassword @generatePassword(privateKey, account.passwordKey)
+      return alert 'invalid' if hash != account.passwordHash
+      return @showPassword account, @generatePassword(account.passwordKey, privateKey)
+
+  promptPrivateKey: (callback) ->
+    $modalPlaceholder = $ '#modal-holder'
+    $modalPlaceholder.empty().append($ $('#generate-single-password-template').text())
+    $modal = $('.modal', $modalPlaceholder)
+    $modal.modal 'show'
+    $('#generate-password-form').submit (event) =>
+      event.preventDefault()
+      privateKey = $('#private-key').val()
+      $modal.modal 'hide'
+      $modalPlaceholder.empty()
+      callback null, privateKey
+
+  promptRepeatedPrivateKey: (callback) ->
     $modalPlaceholder = $ '#modal-holder'
     $modalPlaceholder.empty().append($ @$generatePasswordTemplate)
     $modal = $('.modal', $modalPlaceholder)
@@ -112,11 +142,10 @@ class Keepr
       privateKeyRepeat = $('#private-key-repeat').val()
       $modal.modal 'hide'
       $modalPlaceholder.empty()
-      return alert 'passwords do not match' if privateKey != privateKeyRepeat
-      @showPassword account, privateKey
+      return callback 'passwords do not match' if privateKey != privateKeyRepeat
+      callback null, privateKey
 
-  showPassword: (account, privateKey) ->
-    password = @generatePassword(account.passwordKey, privateKey)
+  showPassword: (account, password) ->
     $tmpl = $('#show-password-template').text()
     $modalPlaceholder = $ '#modal-holder'
     $modalPlaceholder.empty().append($tmpl)
@@ -143,14 +172,23 @@ class Keepr
       window.location.href = "login.html"
 
 class Account
-    constructor: ({@url, @username, @passwordKey}) ->
+    constructor: ({@url, @username, @passwordKey, @passwordHash}) ->
       try
         Util.splitUrl @url
       catch error
         throw error
       @node = null
     val: () ->
-      {url: @url, username: @username, passwordKey :@passwordKey}
+      {url: @url, username: @username, passwordKey: @passwordKey, passwordHash: @passwordHash}
+    updatePasswordHash: (passwordHash, callback) ->
+      currentPasswordHash = @passwordHash
+      @passwordHash = passwordHash
+      @node.set @val(), (err) =>
+        if err
+          @passwordHash = currentPasswordHash
+          return callback err
+        else
+          callback()
 
 class Util
   @splitUrl = (url) ->

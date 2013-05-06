@@ -72,13 +72,16 @@
         <button type="submit" id="new-account-button" class="btn btn-primary btn-small">
           <i class="icon-ok icon-white"></i>
         </button>
-        <button type="button" id="cancel-new-account-button" class="btn btn-warning  btn-small">
+        <button type="button" id="cancel-new-account-button" class="btn btn-warning btn-small">
           <i class="icon-remove icon-white"></i>
         </button>
       </form>
     </div>
     <div id="delete-account" title="Delete Account"></div>
     <div id="modal-holder"></div>
+
+    <!-- ///////////     Templates     /////////////// -->
+    <!-- Template for an account -->
     <script type="text/html" id="account-template">
       <div class="account">
         <button type="button" class="password-button btn btn-primary btn-small">
@@ -91,6 +94,24 @@
         <span class="url-protocol" /><span class="url-hostname" /><span class="url-path" />
         </a>
         </strong>
+      </div>
+    </script>
+
+    <!-- Template for the 'generate single password' modal window -->
+    <script type="text/html" id="generate-single-password-template">
+      <div class="modal hide fade">
+        <div class="modal-header">
+        Enter your private key
+        </div>
+        <div class="modal-body">
+          <form action="" method="GET" id="generate-password-form">
+            <input type="password" id="private-key" class="private-key"
+                required="required" />
+            <button type="submit" id="show-password-button" class="btn btn-primary">
+              <i class="icon-cog icon-white"></i>
+            </button>
+          </form>
+        </div>
       </div>
     </script>
 
@@ -107,12 +128,13 @@
             <input type="password" id="private-key-repeat" class="private-key"
                required="required" />
             <button type="submit" id="show-password-button" class="btn btn-primary">
-              Show
+              <i class="icon-cog icon-white"></i>
             </button>
          </form>
        </div>
     </div>
     </script>
+
     <!-- Template for the 'edit account' modal window -->
     <script type="text/html" id="edit-account-template">
       <div class="modal hide fade">
@@ -120,12 +142,16 @@
           <span>Url: <span class="url" /></span>
           <span>Username: <span class="username" /></span>
           <span>Password Key: <span class="password-key" /></span>
+          <button type="button" class="update-hash-button btn btn-danger">
+            Update Password Hash
+          </button>
           <button type="button" class="account-delete-button btn btn-danger">
             <img src="images/remove.png" alt="delete account" />
           </button>
         </div>
     </div>
     </script>
+
     <script type="text/html" id="show-password-template">
       <div class="modal hide fade">
         <div class="modal-header">
@@ -136,6 +162,7 @@
         </div>
       </div>
     </script>
+
     <script type="text/html" id="delete-account-template">
       <div class="modal hide fade">
         <div class="modal-header">
