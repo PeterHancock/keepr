@@ -87,7 +87,7 @@ class Keepr
     url = $('#new-url').val()
     username = $('#new-username').val()
     key = $('#new-password-key').val()
-    @promptRepeatedPassword (err, privateKey) =>
+    @promptRepeatedPrivateKey (err, privateKey) =>
       return alert err if err
       passwordHash = Keepr.hashPassword @generatePassword(privateKey, key)
       try
@@ -105,13 +105,13 @@ class Keepr
     $('#new-account-form input').each -> $(this).val('')
 
   onGeneratePassword: (event, account) ->
-    @promptPassword (err, privateKey) =>
+    @promptPrivateKey (err, privateKey) =>
       return alert err if err
       hash = Keepr.hashPassword @generatePassword(privateKey, account.passwordKey)
       return alert 'invalid' if hash != account.passwordHash
       return @showPassword account, @generatePassword(account.passwordKey, privateKey)
 
-  promptPassword: (callback) ->
+  promptPrivateKey: (callback) ->
     $modalPlaceholder = $ '#modal-holder'
     $modalPlaceholder.empty().append($ $('#generate-single-password-template').text())
     $modal = $('.modal', $modalPlaceholder)
@@ -123,7 +123,7 @@ class Keepr
       $modalPlaceholder.empty()
       callback null, privateKey
 
-  promptRepeatedPassword: (callback) ->
+  promptRepeatedPrivateKey: (callback) ->
     $modalPlaceholder = $ '#modal-holder'
     $modalPlaceholder.empty().append($ @$generatePasswordTemplate)
     $modal = $('.modal', $modalPlaceholder)
