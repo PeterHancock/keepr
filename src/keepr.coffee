@@ -62,8 +62,12 @@ class Keepr
     $('.url', $modal ).text account.url
     $('.username', $modal ).text account.username
     $('.password-key', $modal ).text account.passwordKey
-    $('.update-hash-button', $modal).click (event) => @onUpdateHash account
-    $('.account-delete-button', $modal).click (event) => @onDeleteAccount event, account
+    $('.update-hash-button', $modal).click (event) =>
+      $modal.modal 'hide'
+      @onUpdateHash account
+    $('.account-delete-button', $modal).click (event) =>
+      $modal.modal 'hide'
+      @onDeleteAccount event, account
     $modal.modal 'show'
     $modal.on 'hidden', => log 'Done editing'
 

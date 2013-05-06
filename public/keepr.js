@@ -106,9 +106,11 @@
       $('.username', $modal).text(account.username);
       $('.password-key', $modal).text(account.passwordKey);
       $('.update-hash-button', $modal).click(function(event) {
+        $modal.modal('hide');
         return _this.onUpdateHash(account);
       });
       $('.account-delete-button', $modal).click(function(event) {
+        $modal.modal('hide');
         return _this.onDeleteAccount(event, account);
       });
       $modal.modal('show');
