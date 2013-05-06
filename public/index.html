@@ -61,7 +61,7 @@
         <p>Quickly and securly generate passwords for your online accounts.
             Keepr stores for you all of your account details in Dropbox.  These are then used, together with a private passphrase (not stored by Keepr), to <a href="#security">securely</a> generate your website password.  Keepr even allows you to configure how your passwords are generator!</p>
       </div>
-      <div class="accordion" id="account-list"></div>
+      <div id="account-list"></div>
       <form action="" method="GET" id="new-account-form">
         <input type="text" id="new-url" class="url"
           required="required" placeholder="e.g., https://www.dropbox.com" />
@@ -69,11 +69,11 @@
           required="required" placeholder="username e.g., someone@gmail.com" />
         <input type="text" id="new-password-key" class="password-key"
           required="required" placeholder="password key" />
-        <button type="submit" id="new-account-button" class="btn btn-primary">
-          <img src="images/add.png" alt="" />
+        <button type="submit" id="new-account-button" class="btn btn-primary btn-small">
+          <i class="icon-ok icon-white"></i>
         </button>
-        <button type="button" id="cancel-new-account-button" class="btn btn-warning">
-          <img src="images/remove.png" alt="" />
+        <button type="button" id="cancel-new-account-button" class="btn btn-warning  btn-small">
+          <i class="icon-remove icon-white"></i>
         </button>
       </form>
     </div>
@@ -81,7 +81,6 @@
     <div id="modal-holder"></div>
     <script type="text/html" id="account-template">
       <div class="account">
-
         <button type="button" class="password-button btn btn-primary btn-small">
           <i class="icon-lock icon-white"></i>
         </button>
