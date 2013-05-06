@@ -88,15 +88,30 @@
       }
       $('.url', $account).attr('href', account.url);
       $('.url', $account).attr('target', '_new');
-      $('.username', $account).text(account.username);
-      $('.password-key', $account).text(account.passwordKey);
       $('.password-button', $account).click(function(event) {
         return _this.onGeneratePassword(event, account);
       });
-      $('.account-delete-button', $account).click(function(event) {
-        return _this.onDeleteAccount(event, account);
+      $('.edit-button', $account).click(function(event) {
+        return _this.onEditAccount(event, account);
       });
       return this.$accountList.append($account);
+    };
+
+    Keepr.prototype.onEditAccount = function(event, account) {
+      var $modal,
+        _this = this;
+      this.$modalPlaceholder.empty().append($('#edit-account-template').text());
+      $modal = $('.modal', this.$modalPlaceholder);
+      $('.url', $modal).text(account.url);
+      $('.username', $modal).text(account.username);
+      $('.password-key', $modal).text(account.passwordKey);
+      $('.account-delete-button', $modal).click(function(event) {
+        return _this.onDeleteAccount(event, account);
+      });
+      $modal.modal('show');
+      return $modal.on('hidden', function() {
+        return log('Done editing');
+      });
     };
 
     Keepr.prototype.onDeleteAccount = function(event, account) {

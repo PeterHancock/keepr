@@ -80,30 +80,22 @@
     <div id="delete-account" title="Delete Account"></div>
     <div id="modal-holder"></div>
     <script type="text/html" id="account-template">
-      <div class="account accordion-group">
-        <div class="accordion-heading">
-          <strong><a class="url" href="#">
-          <span class="url-protocol" /><span class="url-hostname" /><span class="url-path" />
-          </a>
-          </strong>
-          <button type="button" class="password-button btn btn-primary btn-small">
-            Generate password
-          </button>
-          <button type="button" class="edit btn btn-warning btn-small accordion-toggle" data-toggle="collapse" data-parent="#accountList" href="#" >
-            edit
-          </button>
-        </div>
-        <div class="accordion-body collapse">
-          <div class="accordion-inner">
-            <span><span class="username" /></span>
-            <span><span class="password-key" /></span>
-            <button type="button" class="btn btn-danger account-delete-button">
-              <img src="images/remove.png" alt="" />
-            </button>
-          </div>
-        </div>
+      <div class="account">
+
+        <button type="button" class="password-button btn btn-primary btn-small">
+          <i class="icon-lock icon-white"></i>
+        </button>
+        <a class="edit-button btn btn-warning btn-small" href="#">
+          <i class="icon-edit icon-white"></i>
+        </a>
+        <strong><a class="url" href="#">
+        <span class="url-protocol" /><span class="url-hostname" /><span class="url-path" />
+        </a>
+        </strong>
       </div>
     </script>
+
+    <!-- Template for the 'generate password' modal window -->
     <script type="text/html" id="generate-password-template">
       <div class="modal hide fade">
         <div class="modal-header">
@@ -120,6 +112,19 @@
             </button>
          </form>
        </div>
+    </div>
+    </script>
+    <!-- Template for the 'edit account' modal window -->
+    <script type="text/html" id="edit-account-template">
+      <div class="modal hide fade">
+        <div class="modal-header">
+          <span>Url: <span class="url" /></span>
+          <span>Username: <span class="username" /></span>
+          <span>Password Key: <span class="password-key" /></span>
+          <button type="button" class="account-delete-button btn btn-danger">
+            <img src="images/remove.png" alt="delete account" />
+          </button>
+        </div>
     </div>
     </script>
     <script type="text/html" id="show-password-template">

@@ -52,11 +52,19 @@ class Keepr
     $('.url-path', $account).text '/' + path if path
     $('.url', $account).attr('href', account.url)
     $('.url', $account).attr('target', '_new')
-    $('.username', $account).text account.username
-    $('.password-key', $account).text account.passwordKey
     $('.password-button', $account).click (event) => @onGeneratePassword event, account
-    $('.account-delete-button', $account).click (event) => @onDeleteAccount event, account
+    $('.edit-button', $account).click (event) => @onEditAccount event, account
     @$accountList.append $account
+
+  onEditAccount: (event, account) ->
+    @$modalPlaceholder.empty().append $('#edit-account-template').text()
+    $modal = $('.modal', @$modalPlaceholder)
+    $('.url', $modal ).text account.url
+    $('.username', $modal ).text account.username
+    $('.password-key', $modal ).text account.passwordKey
+    $('.account-delete-button', $modal).click (event) => @onDeleteAccount event, account
+    $modal.modal 'show'
+    $modal.on 'hidden', => log 'Done editing'
 
   onDeleteAccount: (event, account) ->
     @$modalPlaceholder.empty().append(@$deleteAccountTemplate)
@@ -143,6 +151,7 @@ class Account
       @node = null
     val: () ->
       {url: @url, username: @username, passwordKey :@passwordKey}
+
 class Util
   @splitUrl = (url) ->
     [protocol, remainder] = url.split '://'
