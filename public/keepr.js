@@ -144,7 +144,6 @@
       url = $('#new-url').val();
       username = $('#new-username').val();
       key = $('#new-password-key').val();
-      $('#new-key-button').attr('disabled', 'disabled');
       try {
         account = new Account({
           url: url,
@@ -162,7 +161,6 @@
         }
         account.node = node;
         _this.render();
-        $('#new-key-button').removeAttr('disabled');
         return _this.clearNewAccountForm();
       });
     };
@@ -174,6 +172,33 @@
     };
 
     Keepr.prototype.onGeneratePassword = function(event, account) {
+      var _this = this;
+      return this.promptPassword(function(err, privateKey) {
+        if (err) {
+          return alert(err);
+        }
+        return _this.showPassword(account, privateKey);
+      });
+    };
+
+    Keepr.prototype.promptPassword = function(callback) {
+      var $modal, $modalPlaceholder,
+        _this = this;
+      $modalPlaceholder = $('#modal-holder');
+      $modalPlaceholder.empty().append($($('#generate-single-password-template').text()));
+      $modal = $('.modal', $modalPlaceholder);
+      $modal.modal('show');
+      return $('#generate-password-form').submit(function(event) {
+        var privateKey;
+        event.preventDefault();
+        privateKey = $('#private-key').val();
+        $modal.modal('hide');
+        $modalPlaceholder.empty();
+        return callback(null, privateKey);
+      });
+    };
+
+    Keepr.prototype.promptRepeatedPassword = function(callback) {
       var $modal, $modalPlaceholder,
         _this = this;
       $modalPlaceholder = $('#modal-holder');
@@ -188,9 +213,9 @@
         $modal.modal('hide');
         $modalPlaceholder.empty();
         if (privateKey !== privateKeyRepeat) {
-          return alert('passwords do not match');
+          return callback('passwords do not match');
         }
-        return _this.showPassword(account, privateKey);
+        return callback(null, privateKey);
       });
     };
 

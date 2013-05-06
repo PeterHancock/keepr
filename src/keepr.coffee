@@ -84,7 +84,6 @@ class Keepr
     url = $('#new-url').val()
     username = $('#new-username').val()
     key = $('#new-password-key').val()
-    $('#new-key-button').attr 'disabled', 'disabled'
     try
       account = new Account(url: url, username: username, passwordKey: key)
     catch error
@@ -95,13 +94,29 @@ class Keepr
       return alert err if err
       account.node = node
       @render()
-      $('#new-key-button').removeAttr 'disabled'
       @clearNewAccountForm()
 
   clearNewAccountForm: ->
     $('#new-account-form input').each -> $(this).val('')
 
   onGeneratePassword: (event, account) ->
+    @promptPassword (err, privateKey) =>
+      return alert err if err
+      return @showPassword account, privateKey
+
+  promptPassword: (callback) ->
+    $modalPlaceholder = $ '#modal-holder'
+    $modalPlaceholder.empty().append($ $('#generate-single-password-template').text())
+    $modal = $('.modal', $modalPlaceholder)
+    $modal.modal 'show'
+    $('#generate-password-form').submit (event) =>
+      event.preventDefault()
+      privateKey = $('#private-key').val()
+      $modal.modal 'hide'
+      $modalPlaceholder.empty()
+      callback null, privateKey
+
+  promptRepeatedPassword: (callback) ->
     $modalPlaceholder = $ '#modal-holder'
     $modalPlaceholder.empty().append($ @$generatePasswordTemplate)
     $modal = $('.modal', $modalPlaceholder)
@@ -112,8 +127,8 @@ class Keepr
       privateKeyRepeat = $('#private-key-repeat').val()
       $modal.modal 'hide'
       $modalPlaceholder.empty()
-      return alert 'passwords do not match' if privateKey != privateKeyRepeat
-      @showPassword account, privateKey
+      return callback 'passwords do not match' if privateKey != privateKeyRepeat
+      callback null, privateKey
 
   showPassword: (account, privateKey) ->
     password = @generatePassword(account.passwordKey, privateKey)
