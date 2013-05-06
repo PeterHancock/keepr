@@ -105,12 +105,31 @@
       $('.url', $modal).text(account.url);
       $('.username', $modal).text(account.username);
       $('.password-key', $modal).text(account.passwordKey);
+      $('.update-hash-button', $modal).click(function(event) {
+        return _this.onUpdateHash(account);
+      });
       $('.account-delete-button', $modal).click(function(event) {
         return _this.onDeleteAccount(event, account);
       });
       $modal.modal('show');
       return $modal.on('hidden', function() {
         return log('Done editing');
+      });
+    };
+
+    Keepr.prototype.onUpdateHash = function(account) {
+      var _this = this;
+      return this.promptRepeatedPrivateKey(function(err, privateKey) {
+        var passwordHash;
+        if (err) {
+          return alert(err);
+        }
+        passwordHash = Keepr.hashPassword(_this.generatePassword(privateKey, account.passwordKey));
+        return account.updatePasswordHash(passwordHash, function(err) {
+          if (err) {
+            return alert("Could not update password hash");
+          }
+        });
       });
     };
 
@@ -148,13 +167,12 @@
       url = $('#new-url').val();
       username = $('#new-username').val();
       key = $('#new-password-key').val();
-      return this.promptRepeatedPassword(function(err, privateKey) {
+      return this.promptRepeatedPrivateKey(function(err, privateKey) {
         var account, passwordHash;
         if (err) {
           return alert(err);
         }
         passwordHash = Keepr.hashPassword(_this.generatePassword(privateKey, key));
-        console.log(passwordHash);
         try {
           account = new Account({
             url: url,
@@ -185,7 +203,7 @@
 
     Keepr.prototype.onGeneratePassword = function(event, account) {
       var _this = this;
-      return this.promptPassword(function(err, privateKey) {
+      return this.promptPrivateKey(function(err, privateKey) {
         var hash;
         if (err) {
           return alert(err);
@@ -198,7 +216,7 @@
       });
     };
 
-    Keepr.prototype.promptPassword = function(callback) {
+    Keepr.prototype.promptPrivateKey = function(callback) {
       var $modal, $modalPlaceholder,
         _this = this;
       $modalPlaceholder = $('#modal-holder');
@@ -215,7 +233,7 @@
       });
     };
 
-    Keepr.prototype.promptRepeatedPassword = function(callback) {
+    Keepr.prototype.promptRepeatedPrivateKey = function(callback) {
       var $modal, $modalPlaceholder,
         _this = this;
       $modalPlaceholder = $('#modal-holder');
@@ -283,7 +301,6 @@
 
     function Account(_arg) {
       this.url = _arg.url, this.username = _arg.username, this.passwordKey = _arg.passwordKey, this.passwordHash = _arg.passwordHash;
-      console.log(this.passwordHash);
       try {
         Util.splitUrl(this.url);
       } catch (error) {
@@ -299,6 +316,21 @@
         passwordKey: this.passwordKey,
         passwordHash: this.passwordHash
       };
+    };
+
+    Account.prototype.updatePasswordHash = function(passwordHash, callback) {
+      var currentPasswordHash,
+        _this = this;
+      currentPasswordHash = this.passwordHash;
+      this.passwordHash = passwordHash;
+      return this.node.set(this.val(), function(err) {
+        if (err) {
+          _this.passwordHash = currentPasswordHash;
+          return callback(err);
+        } else {
+          return callback();
+        }
+      });
     };
 
     return Account;

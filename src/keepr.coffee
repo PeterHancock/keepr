@@ -62,9 +62,17 @@ class Keepr
     $('.url', $modal ).text account.url
     $('.username', $modal ).text account.username
     $('.password-key', $modal ).text account.passwordKey
+    $('.update-hash-button', $modal).click (event) => @onUpdateHash account
     $('.account-delete-button', $modal).click (event) => @onDeleteAccount event, account
     $modal.modal 'show'
     $modal.on 'hidden', => log 'Done editing'
+
+  onUpdateHash: (account) ->
+    @promptRepeatedPrivateKey (err, privateKey) =>
+      return alert err if err
+      passwordHash = Keepr.hashPassword @generatePassword(privateKey, account.passwordKey)
+      account.updatePasswordHash passwordHash, (err) =>
+        return alert "Could not update password hash" if err
 
   onDeleteAccount: (event, account) ->
     @$modalPlaceholder.empty().append(@$deleteAccountTemplate)
@@ -172,6 +180,15 @@ class Account
       @node = null
     val: () ->
       {url: @url, username: @username, passwordKey: @passwordKey, passwordHash: @passwordHash}
+    updatePasswordHash: (passwordHash, callback) ->
+      currentPasswordHash = @passwordHash
+      @passwordHash = passwordHash
+      @node.set @val(), (err) =>
+        if err
+          @passwordHash = currentPasswordHash
+          return callback err
+        else
+          callback()
 
 class Util
   @splitUrl = (url) ->
