@@ -6,7 +6,7 @@
   Keepr = (function() {
 
     function Keepr(jsonDrop, root) {
-      var onLoad,
+      var onErr, onLoad,
         _this = this;
       this.jsonDrop = jsonDrop;
       this.$root = $(root);
@@ -18,18 +18,18 @@
       $('#logout').click(function(event) {
         return _this.logout();
       });
-      onLoad = _.after(2, function(err) {
-        if (err) {
-          $('#error-notice').removeClass('hidden');
-          return console.log(err);
-        }
+      onErr = function(err) {
+        $('#error-notice').removeClass('hidden');
+        return console.log(err);
+      };
+      onLoad = _.after(2, function() {
         _this.wire();
         _this.render();
         return _this.$root.removeClass('hidden');
       });
       this.jsonDrop.get('passwordGenerator').get(function(err, val) {
         if (err) {
-          return onLoad(err);
+          return onErr(err);
         }
         _this.passwordGenerator = Function("passwordKey, privateKey, sha1, sha1base64, urlEncode", val);
         return onLoad();
@@ -41,7 +41,7 @@
         return account;
       }, function(err, accounts) {
         if (err) {
-          return onLoad(err);
+          return onErr(err);
         }
         _this.accounts = accounts;
         return onLoad();

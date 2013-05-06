@@ -34,8 +34,11 @@ clean = (callback) ->
 
 compile = (callback) ->
   console.log 'compile'
-  shell "coffee  -o build -j  jsondrop.js -c src/*.coffee",
-    failOr callback
+  
+  shell "coffee  -o public -j keepr.js -c src/*.coffee",
+    failOr () ->
+      shell "lessc  src/keepr.less public/keepr.css",
+        failOr callback
 
 cleanCompile = (callback) ->
   clean ->

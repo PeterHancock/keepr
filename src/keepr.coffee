@@ -10,15 +10,15 @@ class Keepr
     @$generatePasswordTemplate = $('#generate-password-template').text()
     @$deleteAccountTemplate = $('#delete-account-template').text()
     $('#logout').click (event) => @logout()
-    onLoad = _.after 2, (err) =>
-        if err
-          $('#error-notice').removeClass 'hidden'
-          return console.log err
+    onErr = (err) =>
+      $('#error-notice').removeClass 'hidden'
+      return console.log err
+    onLoad = _.after 2, () =>
         @wire()
         @render()
         @$root.removeClass 'hidden'
     @jsonDrop.get('passwordGenerator').get (err, val) =>
-      return onLoad(err) if err
+      return onErr(err) if err
       @passwordGenerator = Function("passwordKey, privateKey, sha1, sha1base64, urlEncode", val)
       onLoad()
     @jsonDrop.get('accounts').map(
@@ -27,7 +27,7 @@ class Keepr
         account.node = node
         account
       (err, accounts) =>
-        return onLoad(err) if err
+        return onErr(err) if err
         @accounts = accounts
         onLoad())
 
