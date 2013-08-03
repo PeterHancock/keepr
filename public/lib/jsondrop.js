@@ -385,6 +385,8 @@
 
     NodeManager.JSONDROP_DIR = '/jsondrop';
 
+    NodeManager.JSONDROP_DATA = "" + NodeManager.JSONDROP_DIR + "/data";
+
     function NodeManager(_arg) {
       this.fsys = _arg.fsys;
     }
@@ -397,7 +399,7 @@
       var filePart, pathPart;
       filePart = file ? '/' + file : '';
       pathPart = node.path ? '/' + node.path : '';
-      return this.JSONDROP_DIR + pathPart + filePart;
+      return this.JSONDROP_DATA + pathPart + filePart;
     };
 
     NodeManager.pathForNodeValFile = function(node) {
@@ -549,12 +551,12 @@
     NodeManager.prototype._readScalar = function(node, callback) {
       var _this = this;
       return this.fsys.readFile(NodeManager.pathForNodeValFile(node), function(err, val) {
-        val = err ? null : _this._readFile(val).val;
+        val = err ? null : NodeManager.parseFile(val).val;
         return callback(err, val);
       });
     };
 
-    NodeManager.prototype._readFile = function(text) {
+    NodeManager.parseFile = function(text) {
       if (_.isObject(text)) {
         return text;
       } else {
