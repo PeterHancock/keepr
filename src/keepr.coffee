@@ -212,8 +212,7 @@ else
     (args...) -> return
 
 $ ->
-  # The Dropbox App key
-  key = 'ItqJc7dXdkA=|zw4NUV7gAyoyYYzAl/35HXOKgUN/4nv3Tr8MbeVi6Q=='
-  # The Dropbox App secret
-  jsonDrop = new JsonDrop(key: key)
-  new Keepr jsonDrop, '#app-ui'
+  dropbox = new Dropbox.Client(key: 'r2mjxyg3kgewwfd', sandbox: true)
+  jsonDrop = dropbox.authenticate (err, data) ->
+      throw new Error(err) if err
+      new Keepr JsonDrop.forDropbox(dropbox), '#app-ui'

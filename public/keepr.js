@@ -373,12 +373,17 @@
   };
 
   $(function() {
-    var jsonDrop, key;
-    key = 'ItqJc7dXdkA=|zw4NUV7gAyoyYYzAl/35HXOKgUN/4nv3Tr8MbeVi6Q==';
-    jsonDrop = new JsonDrop({
-      key: key
+    var dropbox, jsonDrop;
+    dropbox = new Dropbox.Client({
+      key: 'r2mjxyg3kgewwfd',
+      sandbox: true
     });
-    return new Keepr(jsonDrop, '#app-ui');
+    return jsonDrop = dropbox.authenticate(function(err, data) {
+      if (err) {
+        throw new Error(err);
+      }
+      return new Keepr(JsonDrop.forDropbox(dropbox), '#app-ui');
+    });
   });
 
 }).call(this);
