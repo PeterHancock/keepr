@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>keepr - A Dropbox password manager</title>
+    <link rel="icon" type="image/png" href="images/icon_16.png" />
+    <link rel="stylesheet" type="text/css" href="css/jquery-ui-1.8.23.custom.css" />
+    <link rel="stylesheet" type="text/css" href="./keepr.css" />
+    <script type="text/javascript" src="lib/less.js"></script>
+    <script type="text/javascript" src="lib/dropbox.js"></script>
+    <script type="text/javascript" src="lib/jquery.js"></script>
+    <script type="text/javascript" src="lib/jquery-ui-1.8.23.custom.min.js"></script>
+    <script type="text/javascript" src="lib/underscore-min.js"></script>
+    <script type="text/javascript" src="lib/async.js"></script>
+    <script type="text/javascript" src="lib/jsondrop.js"></script>
+    <script type="text/javascript" src="lib/crypto/core-min.js"></script>
+    <script type="text/javascript" src="lib/crypto/enc-base64-min.js"></script>
+    <script type="text/javascript" src="lib/crypto/sha1-min.js"></script>
+    <script type="text/javascript" src="lib/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./keepr.js"></script>
+    <style type="text/css">
+      body {
+        padding-top: 60px;
+        padding-bottom: 40px;
+      }
+    </style>
+</head>
+  <body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="#">Keepr</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+              <li class="active"><a href="#">Setting</a></li>
+              <li><a href="#security">Security</a></li>
+              <li><a href="#contact">Contact</a></li>
+            </ul>
+            <span class="pull-right">powered by <a href="https://www.dropbox.com/developers">dropbox</a></span>
+            <span class="pull-right"><a href="#" id="logout">logout </a></span>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+
+    <aside id="error-notice" class="hidden">
+      <form action="#" method="GET">
+        Something went wrong :(
+        <button type="submit" id="error-refresh-button">
+          <img src="images/not_done.png" alt="" /> reload the app
+        </button>
+      </form>
+    </aside>
+    <div id="app-ui" class="container hidden">
+      <div class="hero-unit">
+        <h1><img src="images/icon_100.png" /> Keepr</h1>
+        <p>Quickly and securly generate passwords for your online accounts.
+            Keepr stores for you all of your account details in Dropbox.  These are then used, together with a private passphrase (not stored by Keepr), to <a href="#security">securely</a> generate your website password.  Keepr even allows you to configure how your passwords are generated!</p>
+      </div>
+      <div id="account-list"></div>
+      <form action="" method="GET" id="new-account-form">
+        <input type="text" id="new-url" class="url"
+          required="required" placeholder="e.g., https://www.dropbox.com" />
+        <input type="text" id="new-username" class="username"
+          required="required" placeholder="username e.g., someone@gmail.com" />
+        <input type="text" id="new-password-key" class="password-key"
+          required="required" placeholder="password key" />
+        <button type="submit" id="new-account-button" class="btn btn-primary btn-small">
+          <i class="icon-ok icon-white"></i>
+        </button>
+        <button type="button" id="cancel-new-account-button" class="btn btn-warning btn-small">
+          <i class="icon-remove icon-white"></i>
+        </button>
+      </form>
+    </div>
+    <div id="delete-account" title="Delete Account"></div>
+    <div id="modal-holder"></div>
+
+    <!-- ///////////     Templates     /////////////// -->
+    <!-- Template for an account -->
+    <script type="text/html" id="account-template">
+      <div class="account">
+        <button type="button" class="password-button btn btn-primary btn-small">
+          <i class="icon-lock icon-white"></i>
+        </button>
+        <a class="edit-button btn btn-warning btn-small" href="#">
+          <i class="icon-edit icon-white"></i>
+        </a>
+        <strong><a class="url" href="#">
+        <span class="url-protocol" /><span class="url-hostname" /><span class="url-path" />
+        </a>
+        </strong>
+      </div>
+    </script>
+
+    <!-- Template for the 'generate single password' modal window -->
+    <script type="text/html" id="generate-single-password-template">
+      <div class="modal hide fade">
+        <div class="modal-header">
+        Enter your private key
+        </div>
+        <div class="modal-body">
+          <form action="" method="GET" id="generate-password-form">
+            <input type="password" id="private-key" class="private-key"
+                required="required" />
+            <button type="submit" id="show-password-button" class="btn btn-primary">
+              <i class="icon-cog icon-white"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+    </script>
+
+    <!-- Template for the 'generate password' modal window -->
+    <script type="text/html" id="generate-password-template">
+      <div class="modal hide fade">
+        <div class="modal-header">
+        Enter your private key (twice)
+        </div>
+        <div class="modal-body">
+          <form action="" method="GET" id="generate-password-form">
+            <input type="password" id="private-key" class="private-key"
+                required="required" />
+            <input type="password" id="private-key-repeat" class="private-key"
+               required="required" />
+            <button type="submit" id="show-password-button" class="btn btn-primary">
+              <i class="icon-cog icon-white"></i>
+            </button>
+         </form>
+       </div>
+    </div>
+    </script>
+
+    <!-- Template for the 'edit account' modal window -->
+    <script type="text/html" id="edit-account-template">
+      <div class="modal hide fade">
+        <div class="modal-header">
+          <span>Url: <span class="url" /></span>
+          <span>Username: <span class="username" /></span>
+          <span>Password Key: <span class="password-key" /></span>
+          <button type="button" class="update-hash-button btn btn-danger">
+            Update Password Hash
+          </button>
+          <button type="button" class="account-delete-button btn btn-danger">
+            <img src="images/remove.png" alt="delete account" />
+          </button>
+        </div>
+    </div>
+    </script>
+
+    <script type="text/html" id="show-password-template">
+      <div class="modal hide fade">
+        <div class="modal-header">
+        Copy password
+        </div>
+        <div class="modal-body">
+          <form><input type="text" class="show-password input-mini" /></form>
+        </div>
+      </div>
+    </script>
+
+    <script type="text/html" id="delete-account-template">
+      <div class="modal hide fade">
+        <div class="modal-header">
+          Delete account really?
+        </div>
+      <div class="modal-body">
+        <button type="submit" class="confirm btn btn-danger">
+        Confirm
+        </button>
+        <button type="submit" class="cancel btn btn-primary">
+        Cancel
+        </button>
+        </div>
+      </div>
+    </script>
+  </body>
+</html>
