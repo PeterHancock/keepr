@@ -1,4 +1,4 @@
-[Keepr](http://peterhancock.github.io/keepr/)
+[Keepr](https://peterhancock.github.io/keepr/)
 =====
 
 A jsondrop Web App
