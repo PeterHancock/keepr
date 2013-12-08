@@ -1,6 +1,18 @@
+var read = require('read');
 var JsonDrop = require('jsondrop');
 var Dropbox = require('dropbox');
 var underscore = require('underscore');
+var CryptoJS = require("crypto-js");
+
+var sha1 = function(str) {
+  return CryptoJS.SHA1(str).toString();
+};
+var sha1base64 = function(str) {
+  return CryptoJS.SHA1(str).toString(CryptoJS.enc.Base64);
+};
+var urlEncode = function(str) {
+  return str.replace('+', '-').replace('/', '_');
+};
 
 function withJsonDrop(callback) {
     var dropbox = new Dropbox.Client({
@@ -38,9 +50,10 @@ withJsonDrop(function(jsonDrop){
                     });
                 } else {
                     var url = process.argv[2];
-                    var secret = process.argv[3];
-                    var key = underscore.find(accounts, function(account){ return account.url === url; }).passwordKey;
-                    console.log(passwordGenerator(key, secret).substring(0,6)); 
+                    read({ prompt: 'Enter Secret Key: ', silent: true }, failOr(function(secret) {
+                        var key = underscore.find(accounts, function(account){ return account.url === url; }).passwordKey;
+                        console.log(passwordGenerator(key, secret, sha1, sha1base64, urlEncode));
+                    }));
                 };    
             }));
         })); 
