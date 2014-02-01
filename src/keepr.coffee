@@ -212,7 +212,10 @@ else
     (args...) -> return
 
 $ ->
-  dropbox = new Dropbox.Client(key: 'r2mjxyg3kgewwfd', sandbox: true)
-  jsonDrop = dropbox.authenticate (err, data) ->
-      throw new Error(err) if err
-      new Keepr JsonDrop.forDropbox(dropbox), '#app-ui'
+    $.getJSON 'DROPBOXAPP', (appDetails) ->
+        console.log "Dropbox APP '#{appDetails.app}'"
+        dropbox = new Dropbox.Client(key: appDetails.key, sandbox: true)
+        dropbox.authenticate (err, data) ->
+            throw new Error(err) if err
+            console.log "Dropbox APP '#{appDetails.app}'"
+            new Keepr(JsonDrop.forDropbox(dropbox), '#app-ui')
