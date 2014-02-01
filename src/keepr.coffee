@@ -62,21 +62,11 @@ class Keepr
     $('.url', $modal ).text account.url
     $('.username', $modal ).text account.username
     $('.password-key', $modal ).text account.passwordKey
-    $('.update-hash-button', $modal).click (event) =>
-      $modal.modal 'hide'
-      @onUpdateHash account
     $('.account-delete-button', $modal).click (event) =>
       $modal.modal 'hide'
       @onDeleteAccount event, account
     $modal.modal 'show'
     $modal.on 'hidden', => log 'Done editing'
-
-  onUpdateHash: (account) ->
-    @promptRepeatedPrivateKey (err, privateKey) =>
-      return alert err if err
-      passwordHash = Keepr.hashPassword @generatePassword(privateKey, account.passwordKey)
-      account.updatePasswordHash passwordHash, (err) =>
-        return alert "Could not update password hash" if err
 
   onDeleteAccount: (event, account) ->
     @$modalPlaceholder.empty().append(@$deleteAccountTemplate)
@@ -91,19 +81,15 @@ class Keepr
       $modal.modal 'hide'
     $modal.on 'hidden', => log 'Cancelled the deletion of account'
 
-  @hashPassword = (password, key) ->
-    return CryptoJS.SHA1(password + key).toString().substring(0,4)
-
   onCreateAccount: (event) ->
     event.preventDefault()
     url = $('#new-url').val()
     username = $('#new-username').val()
     key = $('#new-password-key').val()
-    @promptRepeatedPrivateKey (err, privateKey) =>
+    @promptPrivateKey (err, privateKey) =>
       return alert err if err
-      passwordHash = Keepr.hashPassword @generatePassword(privateKey, key)
       try
-        account = new Account(url: url, username: username, passwordKey: key, passwordHash: passwordHash)
+        account = new Account(url: url, username: username, passwordKey: key)
       catch error
         return alert "The url '#{url}' is invalid"
       @accounts.push account
@@ -119,8 +105,6 @@ class Keepr
   onGeneratePassword: (event, account) ->
     @promptPrivateKey (err, privateKey) =>
       return alert err if err
-      hash = Keepr.hashPassword @generatePassword(privateKey, account.passwordKey)
-      return alert 'invalid' if hash != account.passwordHash
       return @showPassword account, @generatePassword(account.passwordKey, privateKey)
 
   promptPrivateKey: (callback) ->
@@ -133,20 +117,6 @@ class Keepr
       privateKey = $('#private-key').val()
       $modal.modal 'hide'
       $modalPlaceholder.empty()
-      callback null, privateKey
-
-  promptRepeatedPrivateKey: (callback) ->
-    $modalPlaceholder = $ '#modal-holder'
-    $modalPlaceholder.empty().append($ @$generatePasswordTemplate)
-    $modal = $('.modal', $modalPlaceholder)
-    $modal.modal 'show'
-    $('#generate-password-form').submit (event) =>
-      event.preventDefault()
-      privateKey = $('#private-key').val()
-      privateKeyRepeat = $('#private-key-repeat').val()
-      $modal.modal 'hide'
-      $modalPlaceholder.empty()
-      return callback 'passwords do not match' if privateKey != privateKeyRepeat
       callback null, privateKey
 
   showPassword: (account, password) ->
