@@ -118,12 +118,6 @@
       $('.url', $modal).text(account.url);
       $('.username', $modal).text(account.username);
       $('.password-key', $modal).text(account.passwordKey);
-      $('.update-hash-button', $modal).click((function(_this) {
-        return function(event) {
-          $modal.modal('hide');
-          return _this.onUpdateHash(account);
-        };
-      })(this));
       $('.account-delete-button', $modal).click((function(_this) {
         return function(event) {
           $modal.modal('hide');
@@ -134,23 +128,6 @@
       return $modal.on('hidden', (function(_this) {
         return function() {
           return log('Done editing');
-        };
-      })(this));
-    };
-
-    Keepr.prototype.onUpdateHash = function(account) {
-      return this.promptRepeatedPrivateKey((function(_this) {
-        return function(err, privateKey) {
-          var passwordHash;
-          if (err) {
-            return alert(err);
-          }
-          passwordHash = Keepr.hashPassword(_this.generatePassword(privateKey, account.passwordKey));
-          return account.updatePasswordHash(passwordHash, function(err) {
-            if (err) {
-              return alert("Could not update password hash");
-            }
-          });
         };
       })(this));
     };
@@ -183,29 +160,23 @@
       })(this));
     };
 
-    Keepr.hashPassword = function(password, key) {
-      return CryptoJS.SHA1(password + key).toString().substring(0, 4);
-    };
-
     Keepr.prototype.onCreateAccount = function(event) {
       var key, url, username;
       event.preventDefault();
       url = $('#new-url').val();
       username = $('#new-username').val();
       key = $('#new-password-key').val();
-      return this.promptRepeatedPrivateKey((function(_this) {
+      return this.promptPrivateKey((function(_this) {
         return function(err, privateKey) {
-          var account, error, passwordHash;
+          var account, error;
           if (err) {
             return alert(err);
           }
-          passwordHash = Keepr.hashPassword(_this.generatePassword(privateKey, key));
           try {
             account = new Account({
               url: url,
               username: username,
-              passwordKey: key,
-              passwordHash: passwordHash
+              passwordKey: key
             });
           } catch (_error) {
             error = _error;
@@ -233,13 +204,8 @@
     Keepr.prototype.onGeneratePassword = function(event, account) {
       return this.promptPrivateKey((function(_this) {
         return function(err, privateKey) {
-          var hash;
           if (err) {
             return alert(err);
-          }
-          hash = Keepr.hashPassword(_this.generatePassword(privateKey, account.passwordKey));
-          if (hash !== account.passwordHash) {
-            return alert('invalid');
           }
           return _this.showPassword(account, _this.generatePassword(account.passwordKey, privateKey));
         };
@@ -259,28 +225,6 @@
           privateKey = $('#private-key').val();
           $modal.modal('hide');
           $modalPlaceholder.empty();
-          return callback(null, privateKey);
-        };
-      })(this));
-    };
-
-    Keepr.prototype.promptRepeatedPrivateKey = function(callback) {
-      var $modal, $modalPlaceholder;
-      $modalPlaceholder = $('#modal-holder');
-      $modalPlaceholder.empty().append($(this.$generatePasswordTemplate));
-      $modal = $('.modal', $modalPlaceholder);
-      $modal.modal('show');
-      return $('#generate-password-form').submit((function(_this) {
-        return function(event) {
-          var privateKey, privateKeyRepeat;
-          event.preventDefault();
-          privateKey = $('#private-key').val();
-          privateKeyRepeat = $('#private-key-repeat').val();
-          $modal.modal('hide');
-          $modalPlaceholder.empty();
-          if (privateKey !== privateKeyRepeat) {
-            return callback('passwords do not match');
-          }
           return callback(null, privateKey);
         };
       })(this));
@@ -417,6 +361,7 @@
         if (err) {
           throw new Error(err);
         }
+        console.log("Dropbox APP '" + appDetails.app + "'");
         return new Keepr(JsonDrop.forDropbox(dropbox), '#app-ui');
       });
     });
