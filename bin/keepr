@@ -1,0 +1,10 @@
+#! /usr/local/bin/node
+
+var options = {};
+
+if(process.argv.length > 2) {
+    options.url = process.argv[2];
+} 
+
+require('../lib/keepr-node.js').Keepr(options)
+
